@@ -1,0 +1,118 @@
+/*
+MARK: Global
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+* {
+    font-family: "Inter", sans-serif;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+/*
+MARK: Login
+*/
+
+#loginCard {
+    background-color: whitesmoke;
+    width: 90dvw;
+    height: 90dvh;
+    border-radius: 50px;
+    margin-left: 5dvw;
+    margin-top: 5dvh;
+    padding: 15px;
+}
+
+#loginLogo {
+    display: block;
+    width: 200px;
+    margin: auto;
+    filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.15));
+}
+
+#loginTitle {
+    text-align: center;
+    margin-top: 0px;
+}
+
+/*
+MARK: Sidebar
+*/
+#sidebar {
+    height: 100%;
+    width: 250px;
+    background-color: whitesmoke;
+    border-right: 1px solid rgb(205, 204, 204);
+    overflow-y: auto;
+}
+
+#sidebar-header-logo {
+    width: 70%;
+    margin-left: 15%;
+    margin-top: 10px;
+}
+
+.sidebar-content-item {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    display: block;
+    width: 100%;
+    height: 30px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+}
+
+.sidebar-submenu-nav {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    display: block;
+    width: 100%;
+    height: 30px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-content-item-left {
+    margin-left: 15%;
+    font-weight: bold;
+}
+.sidebar-submenu-nav-left {
+    margin-left: 15%;
+}
+.sidebar-content-item-right {
+    float: right;
+    height: 100%;
+    margin-right: 15%;
+    margin-left: auto;
+}
+
+.sidebar-content-item-icon {
+    margin-right: 5px;
+    height: 25px;
+    width: 25px;
+    vertical-align: middle;
+}
+
+.sidebar-content-item-chevron {
+    height: 20px;
+    width: 20px;
+    vertical-align: middle;
+}

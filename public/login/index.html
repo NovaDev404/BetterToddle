@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Better Toddle</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        html, body {
+            height: auto;
+        }
+    </style>
+    <script src="../login.js"></script>
+</head>
+<body>
+    <div id="loginCard">
+        <img id="loginLogo" src="../images/logo_full.png">
+        <h1 id="loginTitle">Better Toddle Login</h1>
+        <p>Enter auth token below:</p>
+
+        <form onsubmit="submitAuthForm(event)">
+            <input id="tokenInput" type="text" placeholder="Bearer token" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</body>
+</html>

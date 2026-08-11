@@ -1,0 +1,23 @@
+{
+  "name": "better-toddle",
+  "version": "1.0.0",
+  "description": "Node.js Express server for Better Toddle web application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "express",
+    "web",
+    "server",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-http-proxy": "^2.1.2"
+  }
+}
