@@ -3,6 +3,8 @@ const cleaned = token.startsWith('Bearer ') ? token.slice(7) : token;
 const parts = cleaned.split('.');
 const decodeBase64 = (str) => atob(str.replace(/-/g, '+').replace(/_/g, '/'));
 const payload = JSON.parse(decodeBase64(parts[1]));
+let classFeedFiltersPreferences = null;
+let studentCourses = null;
 
 function getRegion() {
   const region = payload.region;
@@ -16,7 +18,7 @@ function getStudentID() {
   const studentID = payload.id;
   return studentID;
 }
-async function getClassFeedFiltersPreference() {
+async function getClassFeedFiltersPreferences() {
   const json = await getStudentPreferences();
   const configurations = json.data.platform.preferences[0].configurations;
   const ClassFeedFiltersPreference = JSON.parse(
@@ -24,6 +26,20 @@ async function getClassFeedFiltersPreference() {
   );
 
   return ClassFeedFiltersPreference;
+}
+async function getSubjectNameFromCourse(courseName) {
+  if (!studentCourses) {
+    studentCourses = await getStudentCourses();
+  }
+  const courses = await studentCourses;
+  const course = courses.find(x => x.title === courseName);
+  return course.subjects[0].name;
+}
+async function getAcademicYearId() {
+  return Object.keys(await classFeedFiltersPreferences)[0];
+}
+async function getCurriculumProgramId() {
+  return Object.keys((await classFeedFiltersPreferences)[await getAcademicYearId()])[0];
 }
 
 async function getStudentPreferences() {
@@ -71,240 +87,28 @@ async function getStudentPreferences() {
 }
 
 async function getStudentCourses() {
+  if (!classFeedFiltersPreferences) {
+    classFeedFiltersPreferences = await getClassFeedFiltersPreferences();
+  }
+  
   const requestPayload = {
-    operationName: "getUserCourses",
-    variables: {
-      isCurriculumProgramFree: false,
-      id: getStudentID(),
-      type: "STUDENT",
-      filters: {
-        archivalState: "ALL",
-        includeRemovedCoursesForStudent: true
-      },
-      courseGradeFilters: {
-        academicYearId: Object.keys(await getClassFeedFiltersPreference())[0]
-      }
-    },
-    query: `query getUserCourses($id: ID!, $type: ENTITY_TYPE_ENUM!, $filters: CourseFilter, $isCurriculumProgramFree: Boolean! = false, $courseGradeFilters: CourseGradeFilters, $enabledModulesFilters: EnabledModulesFiltersInput) {
-    node(id: $id, type: $type) {
-      id
-      ... on Staff {
-        ...staffItem
-        __typename
-      }
-      ... on Student {
-        ...studentCourseItem
-        __typename
-      }
-      __typename
-    }
-  }
-
-  fragment studentCourseItem on Student {
-    id
-    courses(orderBy: TITLE, orderByDirection: ASC, filters: $filters) {
-      ...courseFeedItem
-      __typename
-    }
-    __typename
-  }
-
-  fragment courseFeedItem on Course {
-    id
-    title
-    primaryGrade(filters: $courseGradeFilters) {
-      id
-      name
-      __typename
-    }
-    profileImageData {
-      url
-      icon
-      color
-      __typename
-    }
-    grades(filters: $courseGradeFilters) {
-      id
-      name
-      globalGrade {
-        id
-        uid
-        name
-        constants
-        __typename
-      }
-      displaySequence
-      __typename
-    }
-    calendar {
-      id
-      __typename
-    }
-    curriculumProgram {
-      ...curriculumProgramBasicDetailsItem
-      __typename
-    }
-    academicYears {
-      ...academicYearItem
-      __typename
-    }
-    subjects {
-      id
-      name
-      type
-      __typename
-    }
-    subjectGroups {
-      id
-      name
-      __typename
-    }
-    projectGroups {
-      ...basicProjectGroupDetails
-      __typename
-    }
-    isDemo
-    isRemovedCourseForLoggedInUser
-    isArchived
-    genericTags {
-      id
-      label
-      type
-      __typename
-    }
-    enabledModules(filters: $enabledModulesFilters)
-    learningCourse {
-      id
-      title
-      academicCourse {
-        id
-        label
-        __typename
-      }
-      gradingPeriods {
-        edges {
-          node {
-            id
-            __typename
-          }
-          __typename
+    "operationName": "getUserCourses",
+    "variables": {
+        "isCurriculumProgramFree": false,
+        "id": getStudentID(),
+        "type": "STUDENT",
+        "filters": {
+            "curriculumProgramIds": [
+                await getCurriculumProgramId()
+            ],
+            "archivalState": "ALL",
+            "includeRemovedCoursesForStudent": true
+        },
+        "courseGradeFilters": {
+            "academicYearId": await getAcademicYearId()
         }
-        __typename
-      }
-      displayMetadata
-      __typename
-    }
-    __typename
-  }
-
-  fragment academicYearItem on AcademicYear {
-    id
-    startDate
-    endDate
-    isCurrentAcademicYear
-    isUpcomingAcademicYear
-    transitionReviewStatus
-    label
-    __typename
-  }
-
-  fragment curriculumProgramBasicDetailsItem on CurriculumProgram {
-    id
-    type
-    nodeInterfaceType
-    label
-    acronym
-    academicSetupType
-    programType
-    ... on IbDpCurriculumProgram {
-      examSessionMonth
-      __typename
-    }
-    __typename
-  }
-
-  fragment basicProjectGroupDetails on ProjectGroup {
-    id
-    name
-    type
-    subType
-    curriculumProgram {
-      id
-      type
-      __typename
-    }
-    __typename
-  }
-
-  fragment staffItem on Staff {
-    id
-    courses(orderBy: TITLE, orderByDirection: ASC, filters: $filters) {
-      ...courseItem
-      __typename
-    }
-    __typename
-  }
-
-  fragment courseItem on Course {
-    id
-    title
-    isArchived
-    enabledModules(filters: $enabledModulesFilters)
-    grades(filters: $courseGradeFilters) {
-      ...gradeItem
-      __typename
-    }
-    curriculumProgram {
-      ...curriculumProgramBasicDetailsItem
-      __typename
-    }
-    calendar {
-      id
-      __typename
-    }
-    isDemo
-    academicYears {
-      ...academicYearItem
-      __typename
-    }
-    subjectGroups {
-      id
-      name
-      __typename
-    }
-    projectGroups {
-      ...basicProjectGroupDetails
-      __typename
-    }
-    profileImage
-    isRemovedCourseForLoggedInUser
-    tags {
-      id
-      key
-      value
-      __typename
-    }
-    subjects {
-      id
-      name
-      __typename
-    }
-    __typename
-  }
-
-  fragment gradeItem on Grade {
-    id
-    name
-    unitPlanCount(innerUserIdFilter: $id) @include(if: $isCurriculumProgramFree)
-    globalGrade {
-      id
-      constants
-      displaySequence
-      __typename
-    }
-    displaySequence
-    __typename
-  }`
+    },
+    "query": "query getUserCourses($id: ID!, $type: ENTITY_TYPE_ENUM!, $filters: CourseFilter, $isCurriculumProgramFree: Boolean! = false, $courseGradeFilters: CourseGradeFilters, $enabledModulesFilters: EnabledModulesFiltersInput) {\n  node(id: $id, type: $type) {\n    id\n    ... on Staff {\n      ...staffItem\n      __typename\n    }\n    ... on Student {\n      ...studentCourseItem\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment studentCourseItem on Student {\n  id\n  courses(orderBy: TITLE, orderByDirection: ASC, filters: $filters) {\n    ...courseFeedItem\n    __typename\n  }\n  __typename\n}\n\nfragment courseFeedItem on Course {\n  id\n  title\n  primaryGrade(filters: $courseGradeFilters) {\n    id\n    name\n    __typename\n  }\n  profileImageData {\n    url\n    icon\n    color\n    __typename\n  }\n  grades(filters: $courseGradeFilters) {\n    id\n    name\n    globalGrade {\n      id\n      uid\n      name\n      constants\n      __typename\n    }\n    displaySequence\n    __typename\n  }\n  calendar {\n    id\n    __typename\n  }\n  curriculumProgram {\n    ...curriculumProgramBasicDetailsItem\n    __typename\n  }\n  academicYears {\n    ...academicYearItem\n    __typename\n  }\n  subjects {\n    id\n    name\n    type\n    __typename\n  }\n  subjectGroups {\n    id\n    name\n    __typename\n  }\n  projectGroups {\n    ...basicProjectGroupDetails\n    __typename\n  }\n  isDemo\n  isRemovedCourseForLoggedInUser\n  isArchived\n  genericTags {\n    id\n    label\n    type\n    __typename\n  }\n  enabledModules(filters: $enabledModulesFilters)\n  learningCourse {\n    id\n    title\n    academicCourse {\n      id\n      label\n      __typename\n    }\n    gradingPeriods {\n      edges {\n        node {\n          id\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    displayMetadata\n    __typename\n  }\n  __typename\n}\n\nfragment academicYearItem on AcademicYear {\n  id\n  startDate\n  endDate\n  isCurrentAcademicYear\n  isUpcomingAcademicYear\n  transitionReviewStatus\n  label\n  __typename\n}\n\nfragment curriculumProgramBasicDetailsItem on CurriculumProgram {\n  id\n  type\n  nodeInterfaceType\n  label\n  acronym\n  academicSetupType\n  programType\n  ... on IbDpCurriculumProgram {\n    examSessionMonth\n    __typename\n  }\n  __typename\n}\n\nfragment basicProjectGroupDetails on ProjectGroup {\n  id\n  name\n  type\n  subType\n  curriculumProgram {\n    id\n    type\n    __typename\n  }\n  __typename\n}\n\nfragment staffItem on Staff {\n  id\n  courses(orderBy: TITLE, orderByDirection: ASC, filters: $filters) {\n    ...courseItem\n    __typename\n  }\n  __typename\n}\n\nfragment courseItem on Course {\n  id\n  title\n  isArchived\n  enabledModules(filters: $enabledModulesFilters)\n  grades(filters: $courseGradeFilters) {\n    ...gradeItem\n    __typename\n  }\n  curriculumProgram {\n    ...curriculumProgramBasicDetailsItem\n    __typename\n  }\n  calendar {\n    id\n    __typename\n  }\n  isDemo\n  academicYears {\n    ...academicYearItem\n    __typename\n  }\n  subjectGroups {\n    id\n    name\n    __typename\n  }\n  projectGroups {\n    ...basicProjectGroupDetails\n    __typename\n  }\n  profileImage\n  isRemovedCourseForLoggedInUser\n  tags {\n    id\n    key\n    value\n    __typename\n  }\n  subjects {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment gradeItem on Grade {\n  id\n  name\n  unitPlanCount(innerUserIdFilter: $id) @include(if: $isCurriculumProgramFree)\n  globalGrade {\n    id\n    constants\n    displaySequence\n    __typename\n  }\n  displaySequence\n  __typename\n}\n"
   };
   try {
     const res = await fetch("/" + getRegion() + "/graphql", {
@@ -319,6 +123,161 @@ async function getStudentCourses() {
     const data = await res.json();
     const final = data.data.node.courses;
     return final;
+  } catch (err) {
+    console.error("Error:", err);
+  }
+}
+
+async function getStudentTimetable() {
+  if (!classFeedFiltersPreferences) {
+    classFeedFiltersPreferences = await getClassFeedFiltersPreferences();
+  }
+  
+  const requestPayload = {
+    "operationName": "getTeacherTimetablePeriods",
+    "variables": {
+        "id": getStudentID(),
+        "type": "STUDENT",
+        "periodsFilters": {
+            "startDate": new Date(new Date().setDate(new Date().getDate() - (new Date().getDay() || 7) + 1)).toLocaleDateString("en-CA"),
+            "endDate": new Date(new Date().setDate(new Date().getDate() - (new Date().getDay() || 7) + 5)).toLocaleDateString("en-CA"),
+            "academicYearId": await getAcademicYearId(),
+            "isAllDayPeriods": false,
+            "onlySelectedSlots": true,
+            "filterByViewerClassAccess": false
+        },
+        "permissionFilters": {
+            "academicYearId": await getAcademicYearId()
+        },
+        "termFilters": {
+            "types": [
+                "REPORTING",
+                "EXAM"
+            ]
+        },
+        "attendanceFilters": {
+            "academicYearId": await getAcademicYearId()
+        },
+        "isToddleV2TimetableEnabled": false
+    },
+    "query": "query getTeacherTimetablePeriods($id: ID!, $type: ENTITY_TYPE_ENUM!, $periodsFilters: PeriodFilterOptions, $permissionFilters: TimetableSlotPermissionFilters, $termFilters: TermFilters, $attendanceFilters: TimetableSlotAttendanceFilters!, $itemFilter: TimetableSlotItemsFilters, $isToddleV2TimetableEnabled: Boolean!) {\n  node(id: $id, type: $type) {\n    ... on Student {\n      id\n      ...studentPeriodListItemV2 @skip(if: $isToddleV2TimetableEnabled)\n      ...studentNameFields @include(if: $isToddleV2TimetableEnabled)\n      enrolledPeriodsV3(filters: $periodsFilters) @include(if: $isToddleV2TimetableEnabled) {\n        ...selectedPeriodItemV3\n        __typename\n      }\n      __typename\n    }\n    ... on Staff {\n      id\n      ...staffPeriodListItemV2 @skip(if: $isToddleV2TimetableEnabled)\n      firstName @include(if: $isToddleV2TimetableEnabled)\n      lastName @include(if: $isToddleV2TimetableEnabled)\n      middleName @include(if: $isToddleV2TimetableEnabled)\n      enrolledPeriodsV3(filters: $periodsFilters) @include(if: $isToddleV2TimetableEnabled) {\n        ...selectedPeriodItemV3\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment studentPeriodListItemV2 on Student {\n  id\n  ...studentNameFields\n  enrolledPeriodsV2(filters: $periodsFilters) {\n    ...selectedPeriodItemV2\n    __typename\n  }\n  __typename\n}\n\nfragment selectedPeriodItemV2 on TimetableSlot {\n  date\n  isSelected\n  day\n  timetableSlotId\n  rotationDay {\n    id\n    label\n    __typename\n  }\n  location\n  locationV2 {\n    id\n    label\n    __typename\n  }\n  course {\n    ...courseItem\n    __typename\n  }\n  period {\n    ...periodItem\n    abbreviation\n    __typename\n  }\n  teachers {\n    ...staffItem\n    __typename\n  }\n  teachersV2 {\n    staff {\n      ...staffItem\n      __typename\n    }\n    type\n    __typename\n  }\n  items(filters: $itemFilter) {\n    ...slotItem\n    __typename\n  }\n  permissions {\n    canMarkAttendance(filters: $permissionFilters)\n    canEditCoursePlanner(filters: $permissionFilters)\n    canShareCoursePlannerWithStudents(filters: $permissionFilters)\n    __typename\n  }\n  subject\n  startTime\n  endTime\n  groupKey\n  attendance(filters: $attendanceFilters) {\n    attendanceMarkedStatus\n    unmarkedStudents {\n      id\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment courseItem on Course {\n  id\n  title\n  isArchived\n  curriculumProgram {\n    id\n    type\n    label\n    __typename\n  }\n  primaryGrade {\n    id\n    curriculumProgram {\n      id\n      type\n      __typename\n    }\n    __typename\n  }\n  learningCourse {\n    id\n    title\n    gradingPeriods(filters: $termFilters) {\n      totalCount\n      edges {\n        node {\n          id\n          label\n          lockingStatus\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    primaryGrade {\n      id\n      __typename\n    }\n    __typename\n  }\n  students {\n    totalCount\n    __typename\n  }\n  grades {\n    id\n    __typename\n  }\n  __typename\n}\n\nfragment periodItem on Period {\n  id\n  label\n  type\n  isDefault\n  startTime\n  endTime\n  sequence\n  isDefault\n  abbreviation\n  __typename\n}\n\nfragment staffItem on Staff {\n  id\n  ...staffNameFields\n  profileImage\n  email\n  role\n  isArchived\n  __typename\n}\n\nfragment staffNameFields on Staff {\n  firstName\n  middleName\n  lastName\n  preferredName\n  prefix\n  suffix\n  pronouns\n  type\n  __typename\n}\n\nfragment slotItem on TimetableSlotItem {\n  id\n  itemType\n  item {\n    ... on LearningCourseFlow {\n      id\n      label\n      learningCourse {\n        id\n        __typename\n      }\n      itemType\n      state\n      sharedDetails {\n        class {\n          id\n          __typename\n        }\n        students {\n          id\n          __typename\n        }\n        __typename\n      }\n      lockingInfo {\n        isLocked\n        __typename\n      }\n      item {\n        ... on Attachment {\n          ...attachmentItem\n          __typename\n        }\n        ... on Assessment {\n          ...assessmentItem\n          __typename\n        }\n        ... on UnitPlan {\n          id\n          unitPlanTitle: title {\n            id\n            value\n            __typename\n          }\n          colorCode\n          unitTemplateId: templateId\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    ... on Assignment {\n      id\n      contentType\n      content {\n        ... on Assessment {\n          assignments {\n            edges {\n              id\n              state {\n                state\n                __typename\n              }\n              course {\n                id\n                __typename\n              }\n              __typename\n            }\n            __typename\n          }\n          ...assessmentItem\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment assessmentItem on Assessment {\n  id\n  templateId\n  assessmentTitle: title {\n    id\n    value\n    __typename\n  }\n  assessmentType {\n    id\n    value\n    __typename\n  }\n  image {\n    id\n    value\n    __typename\n  }\n  academicTerm {\n    id\n    label\n    lockingStatus\n    __typename\n  }\n  lockingInfo {\n    isLocked\n    __typename\n  }\n  learningCourse {\n    id\n    __typename\n  }\n  assignments {\n    edges {\n      id\n      course {\n        id\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  ...timetableAssessmentLEDetailFields\n  __typename\n}\n\nfragment timetableAssessmentLEDetailFields on Assessment {\n  globalCategories {\n    id\n    name\n    __typename\n  }\n  taskType {\n    id\n    type\n    label\n    __typename\n  }\n  linkedAssessments {\n    id\n    assessmentType {\n      id\n      value\n      __typename\n    }\n    taskType {\n      id\n      type\n      label\n      __typename\n    }\n    image {\n      id\n      value\n      __typename\n    }\n    title {\n      id\n      value\n      __typename\n    }\n    __typename\n  }\n  allFields {\n    id\n    uid\n    value\n    resolvedMinimalTree {\n      ... on ResolvedFieldStudentTemplate {\n        id\n        attachmentGroups {\n          id\n          attachments {\n            id\n            name\n            url\n            type\n            mimeType\n            thumbUrl\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldLtiTemplate {\n        id\n        attachmentGroups {\n          id\n          attachments {\n            id\n            name\n            url\n            type\n            mimeType\n            thumbUrl\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldPlannerElementSet {\n        id\n        type\n        nodes {\n          id\n          label\n          parent\n          isLeaf\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldConceptSet {\n        id\n        concepts {\n          id\n          label\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldBenchmarkSet {\n        id\n        benchmarks {\n          id\n          label\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldATLSet {\n        id\n        atls {\n          id\n          label\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldLPSet {\n        id\n        learnerProfiles {\n          id\n          label\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldThemeSet {\n        id\n        themes {\n          id\n          label\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldActionSet {\n        id\n        actions {\n          id\n          label\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldRelatedConceptSet {\n        id\n        relatedConcepts {\n          id\n          label\n          __typename\n        }\n        __typename\n      }\n      ... on ResolvedFieldVoiceInstruction {\n        id\n        attachment {\n          ...attachmentItem\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  organizationResources: organizationResourcesV2(orderBy: CREATED_AT, orderByDirection: ASC, first: 100) {\n    edges {\n      node {\n        id\n        label\n        attachment {\n          ...attachmentItem\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  assessmentTools {\n    edges {\n      node {\n        id\n        assessmentToolType\n        assessmentToolItem {\n          id\n          ... on MypObjectiveRubric {\n            id\n            label\n            __typename\n          }\n          ... on ScoreAssessmentTool {\n            id\n            __typename\n          }\n          ... on Analysis {\n            id\n            label\n            criterias {\n              id\n              label\n              __typename\n            }\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment attachmentItem on Attachment {\n  id\n  name\n  type\n  mimeType\n  url\n  signedUrl\n  thumbUrl\n  title\n  metadata\n  streamUrl\n  parentType\n  isRead\n  similarityReport {\n    ...similarityItem\n    __typename\n  }\n  createdBy {\n    id\n    type\n    __typename\n  }\n  lockingState {\n    state\n    scheduledAt\n    __typename\n  }\n  questionAttachment {\n    ... on QuestionSubmission {\n      id\n      questionScore\n      score {\n        id\n        value\n        __typename\n      }\n      __typename\n    }\n    ... on Question {\n      id\n      questionScore\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment similarityItem on SimilarityReport {\n  status\n  submissionId\n  errorCode\n  overallMatchPercentage\n  __typename\n}\n\nfragment studentNameFields on Student {\n  firstName\n  middleName\n  lastName\n  preferredName\n  prefix\n  suffix\n  pronouns\n  type\n  __typename\n}\n\nfragment staffPeriodListItemV2 on Staff {\n  id\n  firstName\n  lastName\n  middleName\n  enrolledPeriodsV2(filters: $periodsFilters) {\n    ...selectedPeriodItemV2\n    __typename\n  }\n  __typename\n}\n\nfragment selectedPeriodItemV3 on TimetableSlotV2 {\n  date\n  isSelected\n  day\n  timetableSlotId\n  rotationDay: rotationEntity {\n    id\n    label\n    __typename\n  }\n  location\n  locationV2 {\n    id\n    label\n    __typename\n  }\n  course {\n    ...courseItem\n    __typename\n  }\n  period {\n    ...periodItem\n    abbreviation\n    __typename\n  }\n  teachersV2: teachers {\n    staff {\n      ...staffItem\n      __typename\n    }\n    type\n    __typename\n  }\n  items(filters: $itemFilter) {\n    ...slotItem\n    __typename\n  }\n  permissions {\n    canMarkAttendance(filters: $permissionFilters)\n    canEditCoursePlanner(filters: $permissionFilters)\n    canShareCoursePlannerWithStudents(filters: $permissionFilters)\n    __typename\n  }\n  subject\n  startTime\n  endTime\n  groupKey\n  attendance(filters: $attendanceFilters) {\n    attendanceMarkedStatus\n    unmarkedStudents {\n      id\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n"
+};
+  try {
+    const res = await fetch("/" + getRegion() + "/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": token
+      },
+      body: JSON.stringify(requestPayload)
+    });
+
+    const data = await res.json();
+    const final = data.data.node;
+    return final;
+  } catch (err) {
+    console.error("Error:", err);
+  }
+}
+
+async function getCourseFlow(courseID, learningCourseID) {
+  const requestPayload = [
+    {
+        "operationName": "getCourseFlowOutline",
+        "variables": {
+            "id": courseID,
+            "filters": {
+                "searchText": "",
+                "unitTypes": [],
+                "sharedWith": [],
+                "itemTypes": [
+                    "FOLDER",
+                    "ASSESSMENT",
+                    "UNIT_PLAN",
+                    "FILE"
+                ],
+                "classIds": [
+                    courseID
+                ],
+                "subjects": [],
+                "assessmentFilters": {
+                    "assessmentType": [],
+                    "groupTypes": [],
+                    "studentAssignmentStatus": []
+                },
+                "attachmentTypes": []
+            },
+            "type": "COURSE"
+        },
+        "query": "query getCourseFlowOutline($id: ID!, $filters: LearningCourseFlowFilter, $type: ENTITY_TYPE_ENUM!) {\n  node(id: $id, type: $type) {\n    ... on Course {\n      id\n      classFlowFeedWrapper {\n        learningCourseFlowFeedOutline(filters: $filters) {\n          ...courseFlowOutlineItem\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    ... on LearningCourse {\n      id\n      learningCourseFlowFeedWrapper {\n        learningCourseFlowFeedOutline(filters: $filters) {\n          ...courseFlowOutlineItem\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment courseFlowOutlineItem on LearningCourseFlow {\n  id\n  label\n  depth\n  childrenV2: children(filters: $filters) {\n    id\n    __typename\n  }\n  parent {\n    id\n    __typename\n  }\n  resourceType: itemType\n  item {\n    id\n    ... on Assessment {\n      title {\n        id\n        value\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n"
+    },
+    {
+        "operationName": "getEntireCourseFlowFeed",
+        "variables": {
+            "includeCourseSyncStatus": true,
+            "id": courseID,
+            "filters": {
+                "searchText": "",
+                "unitTypes": [],
+                "sharedWith": [],
+                "itemTypes": [
+                    "FOLDER",
+                    "ASSESSMENT",
+                    "UNIT_PLAN",
+                    "FILE"
+                ],
+                "classIds": [
+                    courseID
+                ],
+                "subjects": [],
+                "assessmentFilters": {
+                    "assessmentType": [],
+                    "groupTypes": [],
+                    "studentAssignmentStatus": []
+                },
+                "attachmentTypes": []
+            },
+            "syncedBluePrintItemFilters": {
+                "learningCourseId": courseID
+            },
+            "type": "COURSE",
+            "stateFilters": {
+                "classIds": []
+            },
+            "assessmentFieldUids": [
+                "subjects",
+                "learningStandardUBD",
+                "pace"
+            ]
+        },
+        "query": "query getEntireCourseFlowFeed($id: ID!, $filters: LearningCourseFlowFilter, $type: ENTITY_TYPE_ENUM!, $stateFilters: LearningCourseFlowStateFilter, $syncedBluePrintItemFilters: SyncedBluePrintItemFilter, $assessmentFieldUids: [String!], $includeCourseSyncStatus: Boolean = false) {\n  node(id: $id, type: $type) {\n    id\n    ... on Course {\n      classFlowFeedWrapper {\n        learningCourseFlowFeed(first: 10000, filters: $filters) {\n          edges {\n            node {\n              ...courseFlowResource\n              isSyncedWithAllTeacherCourseV2(filters: $syncedBluePrintItemFilters) {\n                courseSyncStatus @include(if: $includeCourseSyncStatus) {\n                  course {\n                    id\n                    title\n                    __typename\n                  }\n                  status\n                  __typename\n                }\n                __typename\n              }\n              __typename\n            }\n            __typename\n          }\n          pageInfo {\n            hasNextPage\n            hasPreviousPage\n            startCursor\n            endCursor\n            __typename\n          }\n          resourceBasedCount {\n            totalCount\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    ... on LearningCourse {\n      id\n      learningCourseFlowFeedWrapper {\n        learningCourseFlowFeed(first: 10000, filters: $filters) {\n          edges {\n            node {\n              ...courseFlowResource\n              isSyncedWithAllTeacherCourseV2(filters: $syncedBluePrintItemFilters) {\n                courseSyncStatus @include(if: $includeCourseSyncStatus) {\n                  course {\n                    id\n                    title\n                    __typename\n                  }\n                  status\n                  __typename\n                }\n                __typename\n              }\n              __typename\n            }\n            __typename\n          }\n          pageInfo {\n            hasNextPage\n            hasPreviousPage\n            startCursor\n            endCursor\n            __typename\n          }\n          resourceBasedCount {\n            totalCount\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment courseFlowResource on LearningCourseFlow {\n  id\n  label\n  depth\n  resourceType: itemType\n  isRepeated\n  repeatedResources\n  state(filters: $stateFilters)\n  parent {\n    id\n    __typename\n  }\n  item {\n    id\n    ... on Assessment {\n      type\n      academicTerm {\n        id\n        label\n        lockingStatus\n        __typename\n      }\n      assessmentType {\n        id\n        value\n        __typename\n      }\n      taskType {\n        id\n        type\n        label\n        __typename\n      }\n      lockingInfo {\n        isLocked\n        __typename\n      }\n      fields(uids: $assessmentFieldUids) {\n        id\n        uid\n        value\n        resolvedMinimalTree {\n          id\n          ... on ResolvedFieldPlannerElementSet {\n            id\n            nodes {\n              id\n              dataSetNodeWrapper {\n                plannerElementNodeSet {\n                  id\n                  __typename\n                }\n                __typename\n              }\n              __typename\n            }\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    ... on UnitPlan {\n      lockingInfo {\n        isLocked\n        __typename\n      }\n      unitType {\n        id\n        value\n        __typename\n      }\n      subjects {\n        id\n        value\n        lockingInfo {\n          isLocked\n          __typename\n        }\n        __typename\n      }\n      standardLockingInfo {\n        uid\n        value\n        lockingInfo {\n          isLocked\n          __typename\n        }\n        __typename\n      }\n      fields(uids: [\"pace\"]) {\n        id\n        uid\n        value\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  lockingInfo {\n    isLocked\n    __typename\n  }\n  isSyncedFromBluePrintCourse(filters: $syncedBluePrintItemFilters)\n  isSyncedWithAllTeacherCourseV2(filters: $syncedBluePrintItemFilters) {\n    isConflictExists\n    status\n    __typename\n  }\n  childrenV2: children(filters: $filters) {\n    id\n    __typename\n  }\n  childrenHierarchyInfo(filters: $filters) {\n    maxDepth\n    totalCount\n    totalCountWithFolder\n    __typename\n  }\n  __typename\n}\n"
+    },
+    {
+        "operationName": "getLearningCourseClasses",
+        "variables": {
+            "id": learningCourseID,
+            "classFilters": {
+                "status": "ALL",
+                "academicYears": [
+                    await getAcademicYearId()
+                ]
+            }
+        },
+        "query": "query getLearningCourseClasses($id: ID!, $classFilters: LearningCourseClassFilter) {\n  node(id: $id, type: LEARNING_COURSE) {\n    id\n    ... on LearningCourse {\n      id\n      classes(filters: $classFilters) {\n        id\n        title\n        isActive\n        isArchived\n        profileImageData {\n          icon\n          color\n          acronym\n          __typename\n        }\n        students {\n          totalCount\n          edges {\n            node {\n              id\n              __typename\n            }\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"
+    }
+  ];
+  try {
+    const res = await fetch("/" + getRegion() + "/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": token
+      },
+      body: JSON.stringify(requestPayload)
+    });
+
+    const data = await res.json();
+    return data;
   } catch (err) {
     console.error("Error:", err);
   }

@@ -16,6 +16,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'images', 'favicon.ico'));
+});
+
 // Toddle API Proxy
 app.use('/:region/graphql', proxy((req) => {
   const region = req.params.region;

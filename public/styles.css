@@ -15,6 +15,9 @@ html, body {
     padding: 0px;
 }
 
+body {
+    display: flex;
+}
 /*
 MARK: Login
 */
@@ -42,8 +45,34 @@ MARK: Login
 }
 
 /*
+MARK: Main
+*/
+
+#main {
+    width: calc(100% - 250px);
+    height: 100%;
+    overflow-y: auto;
+    margin: 0;
+}
+
+#header {
+    width: 100%;
+    top: 0;
+    position: sticky;
+    padding: 10px;
+
+}
+
+#header-title {
+    margin: 0;
+    margin-left: 10px;
+    font-weight: 800;
+}
+
+/*
 MARK: Sidebar
 */
+
 #sidebar {
     height: 100%;
     width: 250px;
@@ -61,7 +90,8 @@ MARK: Sidebar
 .sidebar-content-item {
     margin-bottom: 15px;
     margin-top: 15px;
-    display: block;
+    display: flex;
+    align-items: center;
     width: 100%;
     height: 30px;
     border: none;
@@ -69,7 +99,7 @@ MARK: Sidebar
     cursor: pointer;
     text-align: left;
     padding: 0;
-    white-space: nowrap;
+    white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis; 
 }
@@ -91,17 +121,22 @@ MARK: Sidebar
 }
 
 .sidebar-content-item-left {
-    margin-left: 15%;
+    margin-left: 7%;
     font-weight: bold;
+    display: inline-block;
+}
+.sidebar-content-item-left-subtitle {
+    font-weight: normal;
+    font-size: 10px;
 }
 .sidebar-submenu-nav-left {
-    margin-left: 15%;
+    margin-left: 7%;
 }
 .sidebar-content-item-right {
-    float: right;
-    height: 100%;
-    margin-right: 15%;
     margin-left: auto;
+    margin-right: 7%;
+    display: flex;
+    align-items: center;
 }
 
 .sidebar-content-item-icon {

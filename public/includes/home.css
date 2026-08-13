@@ -1,0 +1,16 @@
+#home-content {
+    margin: 0;
+    margin-left: 20px;
+}
+
+#home-welcome {
+    margin-bottom: 0px;
+    font-size: 17px;
+}
+
+#home-welcome-subtitle {
+    margin-top: 5px;
+    font-size: 15px;
+    font-weight: 425;
+    color: rgb(79, 79, 79);
+}

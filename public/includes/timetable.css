@@ -1,0 +1,26 @@
+#timetable {
+    height: calc(100% - 59.33px);
+}
+.toastui-calendar-day-name-item span {
+    color: black !important;
+}
+.toastui-calendar-week-view-day-names {
+    overflow: hidden !important;
+}
+.toastui-calendar-event-time {
+    border-left: 3px solid #1E88E5 !important;
+}
+.toastui-calendar-edit-button,
+.toastui-calendar-delete-button,
+.toastui-calendar-section-button {
+    display: none !important;
+}
+.toastui-calendar-detail-item:has(.toastui-calendar-ic-state-b) {
+    display: none !important;
+}
+.toastui-calendar-popup-container {
+    font-weight: 250 !important;
+}
+.toastui-calendar-event-title {
+    font-weight: normal !important;
+}
