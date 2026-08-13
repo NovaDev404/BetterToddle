@@ -97,6 +97,7 @@ async function navigateTo(page) {
         initTimetable();
         updateUrl("timetable");
     }
+    updateStudentNameHome();
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -104,5 +105,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const page = urlParams.get('page');
     await addCoursesToCoursesSubmenu();
     populateSidebar();
-    navigateTo(page);
+    if (page) {
+        navigateTo(page);
+    } else {
+        navigateTo("home");
+    }
 });

@@ -1,7 +1,7 @@
 {
   "name": "better-toddle",
-  "version": "1.0.0",
-  "description": "Node.js Express server for Better Toddle web application",
+  "version": "1.1.0",
+  "description": "A better remake of Toddle",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
