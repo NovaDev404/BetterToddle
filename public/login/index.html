@@ -10,18 +10,13 @@
             height: auto;
         }
     </style>
-    <script src="../login.js"></script>
+    <script src="login.js"></script>
 </head>
 <body>
-    <div id="loginCard">
+    <div id="loginPage">
         <img id="loginLogo" src="../images/logo_full.png">
-        <h1 id="loginTitle">Better Toddle Login</h1>
-        <p>Enter auth token below:</p>
-
-        <form onsubmit="submitAuthForm(event)">
-            <input id="tokenInput" type="text" placeholder="Bearer token" required>
-            <button type="submit">Login</button>
-        </form>
+        <h1 id="loginTitle">Login to Better Toddle</h1>
+        <div id="loginButtons"></div>
     </div>
 </body>
 </html>

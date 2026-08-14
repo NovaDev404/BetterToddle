@@ -1,5 +1,5 @@
 function checkTokenValid(token) {
-    if (token == null) {
+    if (!token || !token.includes('Bearer ')) {
         return false;
     }
     const cleaned = token.startsWith('Bearer ') ? token.slice(7) : token;

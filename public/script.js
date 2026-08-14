@@ -88,7 +88,12 @@ async function sidebarCoursesSubmenuNavigate(navItem) {
     }
 }
 
-async function navigateTo(page) {
+async function navigateTo(page, force = false) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = urlParams.get('page') || 'home';
+    if (currentPage === page && !force) {
+        return;
+    }
     if (page === "home") {
         populateMainContent(await mainHomeContent);
         updateUrl("home");
@@ -106,8 +111,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     await addCoursesToCoursesSubmenu();
     populateSidebar();
     if (page) {
-        navigateTo(page);
+        navigateTo(page, true);
     } else {
-        navigateTo("home");
+        navigateTo("home", true);
     }
 });
