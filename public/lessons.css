@@ -1,0 +1,106 @@
+/* Lesson Sidebar Redesign - Clean, Modern, Organized */
+
+.lesson-topic {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1a1a1a;
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    margin: 8px 4px 4px 4px;
+    transition: background-color 0.2s ease;
+}
+
+.lesson-topic:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.lesson-folder {
+    font-weight: 500;
+    font-size: 12px;
+    color: #4a4a4a;
+    padding: 8px 12px 8px 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    margin: 4px 4px;
+    transition: background-color 0.2s ease;
+}
+
+.lesson-folder:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.lesson-item {
+    font-weight: 400;
+    font-size: 12px;
+    color: #333;
+    padding: 8px 12px 8px 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    margin: 2px 2px;
+    border: none;
+    background: none;
+    text-align: left;
+    width: 100%;
+    transition: background-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.lesson-item:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.lesson-chevron {
+    height: 14px;
+    width: 14px;
+    color: #666;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.lesson-chevron.rotated {
+    transform: rotate(-90deg);
+}
+
+.lesson-topic-title,
+.lesson-folder-title,
+.lesson-item-title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lesson-item-icon {
+    height: 16px;
+    width: 16px;
+    color: #666;
+    flex-shrink: 0;
+}
+
+.lesson-children {
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.lesson-children.collapsed {
+    max-height: 0;
+}
+
+.sidebar-no-lessons {
+    margin-top: 20px;
+    margin-left: 7%;
+    font-size: 14px;
+    color: #999;
+    font-style: italic;
+}

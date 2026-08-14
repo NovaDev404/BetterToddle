@@ -207,37 +207,7 @@ async function getStudentTimetable() {
 }
 
 async function getCourseFlow(courseID, learningCourseID) {
-  const requestPayload = [
-    {
-        "operationName": "getCourseFlowOutline",
-        "variables": {
-            "id": courseID,
-            "filters": {
-                "searchText": "",
-                "unitTypes": [],
-                "sharedWith": [],
-                "itemTypes": [
-                    "FOLDER",
-                    "ASSESSMENT",
-                    "UNIT_PLAN",
-                    "FILE"
-                ],
-                "classIds": [
-                    courseID
-                ],
-                "subjects": [],
-                "assessmentFilters": {
-                    "assessmentType": [],
-                    "groupTypes": [],
-                    "studentAssignmentStatus": []
-                },
-                "attachmentTypes": []
-            },
-            "type": "COURSE"
-        },
-        "query": "query getCourseFlowOutline($id: ID!, $filters: LearningCourseFlowFilter, $type: ENTITY_TYPE_ENUM!) {\n  node(id: $id, type: $type) {\n    ... on Course {\n      id\n      classFlowFeedWrapper {\n        learningCourseFlowFeedOutline(filters: $filters) {\n          ...courseFlowOutlineItem\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    ... on LearningCourse {\n      id\n      learningCourseFlowFeedWrapper {\n        learningCourseFlowFeedOutline(filters: $filters) {\n          ...courseFlowOutlineItem\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment courseFlowOutlineItem on LearningCourseFlow {\n  id\n  label\n  depth\n  childrenV2: children(filters: $filters) {\n    id\n    __typename\n  }\n  parent {\n    id\n    __typename\n  }\n  resourceType: itemType\n  item {\n    id\n    ... on Assessment {\n      title {\n        id\n        value\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n"
-    },
-    {
+  const requestPayload = {
         "operationName": "getEntireCourseFlowFeed",
         "variables": {
             "includeCourseSyncStatus": true,
@@ -277,21 +247,7 @@ async function getCourseFlow(courseID, learningCourseID) {
             ]
         },
         "query": "query getEntireCourseFlowFeed($id: ID!, $filters: LearningCourseFlowFilter, $type: ENTITY_TYPE_ENUM!, $stateFilters: LearningCourseFlowStateFilter, $syncedBluePrintItemFilters: SyncedBluePrintItemFilter, $assessmentFieldUids: [String!], $includeCourseSyncStatus: Boolean = false) {\n  node(id: $id, type: $type) {\n    id\n    ... on Course {\n      classFlowFeedWrapper {\n        learningCourseFlowFeed(first: 10000, filters: $filters) {\n          edges {\n            node {\n              ...courseFlowResource\n              isSyncedWithAllTeacherCourseV2(filters: $syncedBluePrintItemFilters) {\n                courseSyncStatus @include(if: $includeCourseSyncStatus) {\n                  course {\n                    id\n                    title\n                    __typename\n                  }\n                  status\n                  __typename\n                }\n                __typename\n              }\n              __typename\n            }\n            __typename\n          }\n          pageInfo {\n            hasNextPage\n            hasPreviousPage\n            startCursor\n            endCursor\n            __typename\n          }\n          resourceBasedCount {\n            totalCount\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    ... on LearningCourse {\n      id\n      learningCourseFlowFeedWrapper {\n        learningCourseFlowFeed(first: 10000, filters: $filters) {\n          edges {\n            node {\n              ...courseFlowResource\n              isSyncedWithAllTeacherCourseV2(filters: $syncedBluePrintItemFilters) {\n                courseSyncStatus @include(if: $includeCourseSyncStatus) {\n                  course {\n                    id\n                    title\n                    __typename\n                  }\n                  status\n                  __typename\n                }\n                __typename\n              }\n              __typename\n            }\n            __typename\n          }\n          pageInfo {\n            hasNextPage\n            hasPreviousPage\n            startCursor\n            endCursor\n            __typename\n          }\n          resourceBasedCount {\n            totalCount\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment courseFlowResource on LearningCourseFlow {\n  id\n  label\n  depth\n  resourceType: itemType\n  isRepeated\n  repeatedResources\n  state(filters: $stateFilters)\n  parent {\n    id\n    __typename\n  }\n  item {\n    id\n    ... on Assessment {\n      type\n      academicTerm {\n        id\n        label\n        lockingStatus\n        __typename\n      }\n      assessmentType {\n        id\n        value\n        __typename\n      }\n      taskType {\n        id\n        type\n        label\n        __typename\n      }\n      lockingInfo {\n        isLocked\n        __typename\n      }\n      fields(uids: $assessmentFieldUids) {\n        id\n        uid\n        value\n        resolvedMinimalTree {\n          id\n          ... on ResolvedFieldPlannerElementSet {\n            id\n            nodes {\n              id\n              dataSetNodeWrapper {\n                plannerElementNodeSet {\n                  id\n                  __typename\n                }\n                __typename\n              }\n              __typename\n            }\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    ... on UnitPlan {\n      lockingInfo {\n        isLocked\n        __typename\n      }\n      unitType {\n        id\n        value\n        __typename\n      }\n      subjects {\n        id\n        value\n        lockingInfo {\n          isLocked\n          __typename\n        }\n        __typename\n      }\n      standardLockingInfo {\n        uid\n        value\n        lockingInfo {\n          isLocked\n          __typename\n        }\n        __typename\n      }\n      fields(uids: [\"pace\"]) {\n        id\n        uid\n        value\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  lockingInfo {\n    isLocked\n    __typename\n  }\n  isSyncedFromBluePrintCourse(filters: $syncedBluePrintItemFilters)\n  isSyncedWithAllTeacherCourseV2(filters: $syncedBluePrintItemFilters) {\n    isConflictExists\n    status\n    __typename\n  }\n  childrenV2: children(filters: $filters) {\n    id\n    __typename\n  }\n  childrenHierarchyInfo(filters: $filters) {\n    maxDepth\n    totalCount\n    totalCountWithFolder\n    __typename\n  }\n  __typename\n}\n"
-    },
-    {
-        "operationName": "getLearningCourseClasses",
-        "variables": {
-            "id": learningCourseID,
-            "classFilters": {
-                "status": "ALL",
-                "academicYears": [
-                    await getAcademicYearId()
-                ]
-            }
-        },
-        "query": "query getLearningCourseClasses($id: ID!, $classFilters: LearningCourseClassFilter) {\n  node(id: $id, type: LEARNING_COURSE) {\n    id\n    ... on LearningCourse {\n      id\n      classes(filters: $classFilters) {\n        id\n        title\n        isActive\n        isArchived\n        profileImageData {\n          icon\n          color\n          acronym\n          __typename\n        }\n        students {\n          totalCount\n          edges {\n            node {\n              id\n              __typename\n            }\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"
-    }
-  ];
+    };
   try {
     const res = await fetch("/" + getRegion() + "/graphql", {
       method: "POST",
@@ -303,7 +259,8 @@ async function getCourseFlow(courseID, learningCourseID) {
     });
 
     const data = await res.json();
-    return data;
+    const final = data.data.node;
+    return final;
   } catch (err) {
     console.error("Error:", err);
   }

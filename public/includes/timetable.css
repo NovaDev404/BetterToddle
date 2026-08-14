@@ -24,3 +24,6 @@
 .toastui-calendar-event-title {
     font-weight: normal !important;
 }
+.toastui-calendar-week {
+    border: none !important;
+}

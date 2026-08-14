@@ -25,10 +25,15 @@ let sidebarCoursesSubmenuContent = `
         <svg class="sidebar-content-item-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5"><path fill-rule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" /></svg>
         Courses
     </span>
-</button>`
+</button>`;
+
+// sidebarLessonsSubmenuContent is defined in lessons.js
 
 let mainHomeContent = fetch('includes/home.html').then(res => res.text());
 let mainTimetableContent = fetch('includes/timetable.html').then(res => res.text());
+
+// Cache for student courses to avoid repeated API calls
+let cachedStudentCourses = null;
 
 function updateUrl(page) {
     if (page == "home") {
@@ -44,11 +49,15 @@ function populateMainContent(content) {
     document.getElementById('main').innerHTML = content;
 }
 async function addCoursesToCoursesSubmenu() {
-    const courses = await getStudentCourses();
+    // Use cached courses if available, otherwise fetch and cache
+    if (!cachedStudentCourses) {
+        cachedStudentCourses = await getStudentCourses();
+    }
+    const courses = cachedStudentCourses;
     courses.forEach(course => {
         const subjectName = course.subjects[0].name;
         const courseName = course.title;
-        sidebarCoursesSubmenuContent += `<button class="sidebar-content-item" onclick="sidebarCoursesSubmenuNavigate(this)"><div class="sidebar-content-item-left">${subjectName}<br><span class="sidebar-content-item-left-subtitle">${courseName}</span></div></button>`;
+        sidebarCoursesSubmenuContent += `<button class="sidebar-content-item" onclick="sidebarCoursesSubmenuNavigate(this)"><div class="sidebar-content-item-left">${subjectName}<br><span class="sidebar-content-item-left-subtitle">${courseName}</span></div><div class="sidebar-content-item-right"><svg class="sidebar-content-item-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5"><path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" /></svg></div></button>`;
     });
 }
 
@@ -71,20 +80,25 @@ async function sidebarNavigate(navItem) {
 }
 
 async function sidebarCoursesSubmenuNavigate(navItem) {
-    const itemName = navItem.children[0]?.children[1]?.textContent.trim() ?? navItem.children[0]?.textContent.trim();
+    const subtitleElement = navItem.children[0]?.querySelector('.sidebar-content-item-left-subtitle');
+    const itemName = subtitleElement ? subtitleElement.textContent.trim() : navItem.children[0]?.textContent.trim();
     if (itemName == "Courses") {
         populateSidebar();
     } else {
-        const courses = await getStudentCourses();
+        // Use cached courses instead of calling the API again
+        const courses = cachedStudentCourses;
         let courseId = "";
         let learningCourseId = "";
+        let subjectName = "";
         courses.forEach(course => {
             if (course.title === itemName) {
                 courseId = course.id;
                 learningCourseId = course.learningCourse[0].id;
+                subjectName = course.subjects[0].name;
             }
         });
-        const courseFlow = await getCourseFlow(courseId, learningCourseId);
+        await addLessonsToLessonsSubmenu(courseId, learningCourseId, subjectName);
+        document.getElementById('sidebar-content').innerHTML = sidebarLessonsSubmenuContent;
     }
 }
 
