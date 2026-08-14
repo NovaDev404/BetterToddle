@@ -2,9 +2,6 @@ let sidebarLessonsSubmenuContent = "";
 
 async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectName) {
     const lessons = await getCourseFlow(courseID, learningCourseID);
-    console.log(lessons);
-    
-    // Reset the lessons submenu content with dynamic subject name
     sidebarLessonsSubmenuContent = `
 <button class="sidebar-submenu-nav" onclick="sidebarLessonsSubmenuNavigate(this)">
     <span class="sidebar-submenu-nav-left">
@@ -13,20 +10,16 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
     </span>
 </button>`;
 
-    // Parse the lesson hierarchy from the JSON response
     const edges = lessons.classFlowFeedWrapper.learningCourseFlowFeed.edges;
-    
-    // Check if there are no lessons
+
     if (!edges || edges.length === 0) {
         sidebarLessonsSubmenuContent += `<div class="sidebar-no-lessons">No lessons set</div>`;
         return;
     }
-    
-    // Build a tree structure from the flat edges array
+
     const nodeMap = new Map();
     const rootNodes = [];
-    
-    // First pass: create all nodes
+
     edges.forEach(edge => {
         const node = edge.node;
         const cleanLabel = node.label.replace(/<[^>]*>/g, '').trim();
@@ -40,8 +33,7 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
             children: []
         });
     });
-    
-    // Second pass: build parent-child relationships
+
     nodeMap.forEach(node => {
         if (node.parentId && nodeMap.has(node.parentId)) {
             nodeMap.get(node.parentId).children.push(node);
@@ -49,18 +41,15 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
             rootNodes.push(node);
         }
     });
-    
-    // Generate HTML from the tree structure
+
     function generateNodeHTML(node) {
         let html = '';
         
         if (node.resourceType === 'UNIT_PLAN') {
-            // Topic header with children
             const hasChildren = node.children.length > 0;
             const chevron = hasChildren ? '<svg class="lesson-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02l2.97 2.97 2.97-2.97a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>' : '';
             
             html += `<div class="lesson-topic" onclick="toggleLesson(this)">${chevron}<span class="lesson-topic-title">${node.label}</span></div>`;
-            // Add children
             if (hasChildren) {
                 html += '<div class="lesson-children">';
                 node.children.forEach(child => {
@@ -69,12 +58,10 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
                 html += '</div>';
             }
         } else if (node.resourceType === 'FOLDER') {
-            // Folder with children
             const hasChildren = node.children.length > 0;
             const chevron = hasChildren ? '<svg class="lesson-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02l2.97 2.97 2.97-2.97a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>' : '';
             
             html += `<div class="lesson-folder" onclick="toggleLesson(this)">${chevron}<span class="lesson-folder-title">${node.label}</span></div>`;
-            // Add children
             if (hasChildren) {
                 html += '<div class="lesson-children">';
                 node.children.forEach(child => {
@@ -83,7 +70,6 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
                 html += '</div>';
             }
         } else {
-            // Item (assessment, file, etc.)
             const icon = getResourceIcon(node.resourceType);
             html += `<button class="lesson-item" onclick="sidebarLessonsSubmenuNavigate(this)">${icon}<span class="lesson-item-title">${node.label}</span></button>`;
         }
@@ -101,21 +87,18 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
         return icons[resourceType] || '<svg class="lesson-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.75 12.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM7.5 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM8.25 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM9.75 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM10.5 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM12.75 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM14.25 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM15 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM16.5 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM15 12.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM16.5 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" /></svg>';
     }
     
-    // Generate HTML for all root nodes
     rootNodes.forEach(node => {
         sidebarLessonsSubmenuContent += generateNodeHTML(node);
     });
 }
 
 async function sidebarLessonsSubmenuNavigate(navItem) {
-    // Check if it's the back button (has sidebar-submenu-nav-left class)
     if (navItem.classList.contains('sidebar-submenu-nav')) {
-        // Go back to courses submenu
         document.getElementById('sidebar-content').innerHTML = sidebarCoursesSubmenuContent;
     } else {
         // Clicking on lesson items does nothing for now
         const itemName = navItem.querySelector('.lesson-item-title')?.textContent.trim();
-        console.log("Lesson item clicked:", itemName);
+        console.log("Lesson clicked:", itemName);
     }
 }
 
@@ -130,6 +113,3 @@ function toggleLesson(headerElement) {
         }
     }
 }
-
-// Note: This file expects script.js to be loaded first, as it uses sidebarCoursesSubmenuContent
-// and the getCourseFlow function from toddle_api.js

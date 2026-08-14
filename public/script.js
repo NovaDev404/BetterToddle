@@ -27,12 +27,8 @@ let sidebarCoursesSubmenuContent = `
     </span>
 </button>`;
 
-// sidebarLessonsSubmenuContent is defined in lessons.js
-
 let mainHomeContent = fetch('includes/home.html').then(res => res.text());
 let mainTimetableContent = fetch('includes/timetable.html').then(res => res.text());
-
-// Cache for student courses to avoid repeated API calls
 let cachedStudentCourses = null;
 
 function updateUrl(page) {
@@ -49,7 +45,6 @@ function populateMainContent(content) {
     document.getElementById('main').innerHTML = content;
 }
 async function addCoursesToCoursesSubmenu() {
-    // Use cached courses if available, otherwise fetch and cache
     if (!cachedStudentCourses) {
         cachedStudentCourses = await getStudentCourses();
     }
@@ -85,7 +80,6 @@ async function sidebarCoursesSubmenuNavigate(navItem) {
     if (itemName == "Courses") {
         populateSidebar();
     } else {
-        // Use cached courses instead of calling the API again
         const courses = cachedStudentCourses;
         let courseId = "";
         let learningCourseId = "";
