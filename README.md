@@ -1,4 +1,5 @@
-# Better Toddle
+<p align="center"><img height="100px" src="public/images/logo_full.png"></p>
+
 ## Progress
 - [x] Login page
 - [x] Timetable
