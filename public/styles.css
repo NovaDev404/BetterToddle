@@ -236,17 +236,24 @@ MARK: Sidebar
 #sidebar {
     height: 100%;
     width: 250px;
+    max-width: 100dvw;
     background-color: whitesmoke;
     border-right: 1px solid rgb(205, 204, 204);
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 5px;
+    transition: width 0.3s ease-in-out, max-width 0.3s ease-in-out;
+}
+
+.sidebar-extended {
+    width: 400px !important;
+    max-width: 100dvw !important;
 }
 
 #sidebar-header-logo {
-    width: 70%;
-    margin-left: 15%;
-    margin-top: 10px;
+    width: 160px;
+    margin: 10px auto 0;
+    display: block;
 }
 
 .sidebar-content-item {
@@ -327,7 +334,9 @@ MARK: Sidebar
     height: 20px;
     width: 20px;
     vertical-align: middle;
-}.sidebar-no-lessons {
+}
+
+.sidebar-no-lessons {
     margin-top: 20px;
     margin-left: 7%;
     font-size: 14px;

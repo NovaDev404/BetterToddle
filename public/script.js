@@ -92,6 +92,7 @@ async function sidebarCoursesSubmenuNavigate(navItem) {
             }
         });
         await addLessonsToLessonsSubmenu(courseId, learningCourseId, subjectName);
+        document.getElementById('sidebar').classList.add('sidebar-extended');
         document.getElementById('sidebar-content').innerHTML = sidebarLessonsSubmenuContent;
     }
 }
