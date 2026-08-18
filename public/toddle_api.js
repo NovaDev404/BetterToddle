@@ -3,7 +3,6 @@ const cleaned = token.startsWith('Bearer ') ? token.slice(7) : token;
 const parts = cleaned.split('.');
 const decodeBase64 = (str) => atob(str.replace(/-/g, '+').replace(/_/g, '/'));
 const payload = JSON.parse(decodeBase64(parts[1]));
-let classFeedFiltersPreferences = null;
 let studentCourses = null;
 
 function getRegion() {
@@ -18,15 +17,6 @@ function getStudentID() {
   const studentID = payload.id;
   return studentID;
 }
-async function getClassFeedFiltersPreferences() {
-  const json = await getStudentPreferences();
-  const configurations = json.data.platform.preferences[0].configurations;
-  const ClassFeedFiltersPreference = JSON.parse(
-    configurations.find(x => x.configuration === "ClassFeedFiltersPreference")?.value
-  );
-
-  return ClassFeedFiltersPreference;
-}
 async function getSubjectNameFromCourse(courseName) {
   if (!studentCourses) {
     studentCourses = await getStudentCourses();
@@ -36,10 +26,20 @@ async function getSubjectNameFromCourse(courseName) {
   return course.subjects[0].name;
 }
 async function getAcademicYearId() {
-  return Object.keys(await classFeedFiltersPreferences)[0];
+  const details = await getStudentDetails();
+  const years = details.data.node.academicYears;
+  const current = years.find(y => y.isCurrentAcademicYear);
+  if (current) return current.id;
+  return years[0]?.id;
 }
+
 async function getCurriculumProgramId() {
-  return Object.keys((await classFeedFiltersPreferences)[await getAcademicYearId()])[0];
+  const details = await getStudentDetails();
+  const currentYearId = await getAcademicYearId();
+  const course = details.data.node.allCourses.find(c =>
+    c.academicYears.some(y => y.id === currentYearId)
+  );
+  return course?.curriculumProgram?.id;
 }
 
 async function getStudentDetails() {
@@ -112,11 +112,7 @@ async function getStudentPreferences() {
   }
 }
 
-async function getStudentCourses() {
-  if (!classFeedFiltersPreferences) {
-    classFeedFiltersPreferences = await getClassFeedFiltersPreferences();
-  }
-  
+async function getStudentCourses() {  
   const requestPayload = {
     "operationName": "getUserCourses",
     "variables": {
@@ -154,11 +150,7 @@ async function getStudentCourses() {
   }
 }
 
-async function getStudentTimetable() {
-  if (!classFeedFiltersPreferences) {
-    classFeedFiltersPreferences = await getClassFeedFiltersPreferences();
-  }
-  
+async function getStudentTimetable() {  
   const requestPayload = {
     "operationName": "getTeacherTimetablePeriods",
     "variables": {
