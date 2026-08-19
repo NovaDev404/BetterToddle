@@ -1,5 +1,4 @@
 async function updateStudentNameHome() {
-    const studentDetails = await getStudentDetails();
     while(!document.getElementById("home-user")) {
         await new Promise(resolve => setTimeout(resolve, 100));
     }

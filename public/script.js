@@ -129,6 +129,7 @@ function loadingOverlay(yes) {
 document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get('page');
+    await loadStudentDetails();
     await addCoursesToCoursesSubmenu();
     populateSidebar();
     if (page) {

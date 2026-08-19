@@ -4,6 +4,7 @@ const parts = cleaned.split('.');
 const decodeBase64 = (str) => atob(str.replace(/-/g, '+').replace(/_/g, '/'));
 const payload = JSON.parse(decodeBase64(parts[1]));
 let studentCourses = null;
+let studentDetails = null;
 
 function getRegion() {
   const region = payload.region;
@@ -26,7 +27,7 @@ async function getSubjectNameFromCourse(courseName) {
   return course.subjects[0].name;
 }
 async function getAcademicYearId() {
-  const details = await getStudentDetails();
+  const details = studentDetails;
   const years = details.data.node.academicYears;
   const current = years.find(y => y.isCurrentAcademicYear);
   if (current) return current.id;
@@ -34,7 +35,7 @@ async function getAcademicYearId() {
 }
 
 async function getCurriculumProgramId() {
-  const details = await getStudentDetails();
+  const details = studentDetails;
   const currentYearId = await getAcademicYearId();
   const course = details.data.node.allCourses.find(c =>
     c.academicYears.some(y => y.id === currentYearId)
@@ -66,6 +67,10 @@ async function getStudentDetails() {
   } catch (err) {
     console.error("Error:", err);
   }
+}
+
+async function loadStudentDetails() {
+    studentDetails = await getStudentDetails();
 }
 
 async function getStudentPreferences() {
