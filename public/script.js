@@ -61,12 +61,14 @@ async function sidebarNavigate(navItem) {
     switch (itemName) {
         case "Home":
             navigateTo("home");
+            document.getElementById('sidebar').classList.remove('mobile-visible');
             break;
         case "Courses":
             document.getElementById('sidebar-content').innerHTML = sidebarCoursesSubmenuContent;
             break;
         case "Timetable":
             navigateTo("timetable");
+            document.getElementById('sidebar').classList.remove('mobile-visible');
             break;
         default:
             // Do nothing
@@ -136,5 +138,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         navigateTo(page, true);
     } else {
         navigateTo("home", true);
+    }
+
+    // Hamburger menu toggle
+    const hamburger = document.getElementById('hamburger');
+    if (hamburger) {
+        hamburger.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('mobile-visible');
+        });
     }
 });
