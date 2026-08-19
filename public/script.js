@@ -80,6 +80,7 @@ async function sidebarCoursesSubmenuNavigate(navItem) {
     if (itemName == "Courses") {
         populateSidebar();
     } else {
+        loadingOverlay(true);
         const courses = cachedStudentCourses;
         let courseId = "";
         let learningCourseId = "";
@@ -94,6 +95,7 @@ async function sidebarCoursesSubmenuNavigate(navItem) {
         await addLessonsToLessonsSubmenu(courseId, learningCourseId, subjectName);
         document.getElementById('sidebar').classList.add('sidebar-extended');
         document.getElementById('sidebar-content').innerHTML = sidebarLessonsSubmenuContent;
+        loadingOverlay(false);
     }
 }
 
@@ -103,15 +105,25 @@ async function navigateTo(page, force = false) {
     if (currentPage === page && !force) {
         return;
     }
+    loadingOverlay(true);
     if (page === "home") {
         populateMainContent(await mainHomeContent);
         updateUrl("home");
+        await updateStudentNameHome();
+        loadingOverlay(false);
     } else if (page === "timetable") {
         populateMainContent(await mainTimetableContent);
         initTimetable();
         updateUrl("timetable");
     }
-    updateStudentNameHome();
+}
+
+function loadingOverlay(yes) {
+    if (yes) {
+        document.getElementById("loadingOverlay").style.display = "flex";
+    } else {
+        document.getElementById("loadingOverlay").style.display = "none";
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async function() {

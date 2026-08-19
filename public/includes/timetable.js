@@ -144,4 +144,5 @@ async function initTimetable() {
         events.push(event);
     }
     calendar.createEvents(events);
+    loadingOverlay(false);
 }
