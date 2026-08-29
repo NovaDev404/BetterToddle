@@ -51,10 +51,31 @@
     width: 100%;
     transition: background-color 0.2s ease;
     box-sizing: border-box;
+    position: relative;
 }
 
 .lesson-item:hover {
     background-color: rgba(0, 0, 0, 0.04);
+}
+
+.lesson-item::after {
+    content: attr(data-lesson-type);
+    position: absolute;
+    right: 12px;
+    background-color: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 100;
+}
+
+.lesson-item:hover::after {
+    opacity: 1;
 }
 
 .lesson-chevron {
