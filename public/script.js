@@ -29,13 +29,15 @@ let sidebarCoursesSubmenuContent = `
 
 let mainHomeContent = fetch('includes/home.html').then(res => res.text());
 let mainTimetableContent = fetch('includes/timetable.html').then(res => res.text());
+let mainViewerContent = fetch('includes/viewer.html').then(res => res.text());
 let cachedStudentCourses = null;
 
-function updateUrl(page) {
+function updateUrl(page, query = "") {
     if (page == "home") {
         window.history.replaceState({}, "", "/");
     } else {
-        window.history.replaceState({}, "", "?page=" + page);
+        const url = query ? `?page=${page}&${query}` : `?page=${page}`;
+        window.history.replaceState({}, "", url);
     }
 }
 function populateSidebar() {
@@ -101,11 +103,20 @@ async function sidebarCoursesSubmenuNavigate(navItem) {
     }
 }
 
-async function navigateTo(page, force = false) {
+async function navigateTo(page, force = false, params = {}) {
     const urlParams = new URLSearchParams(window.location.search);
     const currentPage = urlParams.get('page') || 'home';
     if (currentPage === page && !force) {
-        return;
+        if (page === "viewer") {
+            const currentUrl = urlParams.get('url');
+            const currentTitle = urlParams.get('title');
+            const currentType = urlParams.get('type');
+            if (currentUrl === params.url && currentTitle === params.title && currentType === params.mimeType) {
+                return;
+            }
+        } else {
+            return;
+        }
     }
     loadingOverlay(true);
     if (page === "home") {
@@ -117,6 +128,15 @@ async function navigateTo(page, force = false) {
         populateMainContent(await mainTimetableContent);
         initTimetable();
         updateUrl("timetable");
+    } else if (page === "viewer") {
+        populateMainContent(await mainViewerContent);
+        const viewerParams = new URLSearchParams();
+        if (params.url) viewerParams.set('url', params.url);
+        if (params.title) viewerParams.set('title', params.title);
+        if (params.mimeType) viewerParams.set('type', params.mimeType);
+        updateUrl("viewer", viewerParams.toString());
+        setTimeout(() => loadViewerContent(params.url, params.title, params.mimeType), 100);
+        loadingOverlay(false);
     }
 }
 
@@ -135,7 +155,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     await addCoursesToCoursesSubmenu();
     populateSidebar();
     if (page) {
-        navigateTo(page, true);
+        if (page === "viewer") {
+            const viewerParams = {
+                url: urlParams.get('url'),
+                title: urlParams.get('title'),
+                mimeType: urlParams.get('type')
+            };
+            navigateTo(page, true, viewerParams);
+        } else {
+            navigateTo(page, true);
+        }
     } else {
         navigateTo("home", true);
     }

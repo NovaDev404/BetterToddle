@@ -1,4 +1,5 @@
 let sidebarLessonsSubmenuContent = "";
+let currentCourseFlowNodes = null;
 
 function classifyCourseFlowNode(node) {
     const resourceType = node.resourceType;
@@ -144,6 +145,8 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
         }
     });
 
+    currentCourseFlowNodes = nodeMap;
+
     function generateNodeHTML(node) {
         let html = '';
         
@@ -176,7 +179,7 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
             const info = classifyCourseFlowNode(node);
             const lessonType = getLessonTypeLabel(info);
             const label = info.attachmentType === "NOTE" ? "Note" : node.label;
-            html += `<button class="lesson-item" onclick="sidebarLessonsSubmenuNavigate(this)" data-lesson-type="${lessonType}">${icon}<span class="lesson-item-title">${label}</span></button>`;
+            html += `<button class="lesson-item" onclick="sidebarLessonsSubmenuNavigate(this)" data-lesson-type="${lessonType}" data-node-id="${node.id}">${icon}<span class="lesson-item-title">${label}</span></button>`;
         }
         
         return html;
@@ -208,6 +211,10 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
                 return '<img class="lesson-item-icon" src="/icons/24/solid/link.svg" alt="Link" width="16" height="16" />';
             }
 
+            if (mime?.startsWith("video/")) {
+                return '<img class="lesson-item-icon" src="/icons/24/solid/video-camera.svg" alt="Video" width="16" height="16" />';
+            }
+
             if (mime === "application/vnd.openxmlformats-officedocument.presentationml.presentation" || mime === "application/vnd.ms-powerpoint") {
                 return '<img class="lesson-item-icon" src="/icons/24/solid/presentation-chart-bar.svg" alt="Presentation" width="16" height="16" />';
             }
@@ -222,10 +229,6 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
 
             if (mime?.startsWith("audio/")) {
                 return '<img class="lesson-item-icon" src="/icons/24/solid/musical-note.svg" alt="Audio" width="16" height="16" />';
-            }
-
-            if (mime?.startsWith("video/")) {
-                return '<img class="lesson-item-icon" src="/icons/24/solid/video-camera.svg" alt="Video" width="16" height="16" />';
             }
 
             if (mime?.startsWith("image/")) {
@@ -256,9 +259,23 @@ async function sidebarLessonsSubmenuNavigate(navItem) {
         document.getElementById('sidebar-content').innerHTML = sidebarCoursesSubmenuContent;
         document.getElementById('sidebar').classList.remove('sidebar-extended');
     } else {
-        // Clicking on lesson items does nothing for now
         const itemName = navItem.querySelector('.lesson-item-title')?.textContent.trim();
-        console.log("Lesson clicked:", itemName);
+        const lessonType = navItem.getAttribute('data-lesson-type');
+        const nodeId = navItem.getAttribute('data-node-id');
+
+        if (nodeId && lessonType !== "Note" && lessonType !== "Link") {
+            const node = currentCourseFlowNodes.get(nodeId);
+            if (node && node.item) {
+                const url = node.item.signedUrl || node.item.url;
+                const mimeType = node.item.mimeType;
+
+                if (url) {
+                    await navigateTo("viewer", false, { url, title: itemName, mimeType });
+                }
+            }
+        }
+
+        document.getElementById('sidebar').classList.remove('mobile-visible');
     }
 }
 
