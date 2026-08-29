@@ -325,15 +325,17 @@ MARK: Sidebar
 
 .sidebar-content-item-icon {
     margin-right: 5px;
-    height: 25px;
-    width: 25px;
+    height: 24px;
+    width: 24px;
     vertical-align: middle;
+    flex-shrink: 0;
 }
 
 .sidebar-content-item-chevron {
     height: 20px;
     width: 20px;
     vertical-align: middle;
+    flex-shrink: 0;
 }
 
 .sidebar-no-lessons {

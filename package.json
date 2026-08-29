@@ -18,6 +18,7 @@
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "express-http-proxy": "^2.1.2"
+    "express-http-proxy": "^2.1.2",
+    "heroicons": "^2.2.0"
   }
 }
