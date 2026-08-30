@@ -178,6 +178,47 @@ const contentMainJs = `(() => {
 
     console.log("[Better Toddle] Main world content script loaded");
 
+    // Block Toddle's redirects by overriding window.location
+    const originalLocation = window.location;
+    let currentUrl = window.location.href;
+
+    Object.defineProperty(window, 'location', {
+        get: function() {
+            return originalLocation;
+        },
+        set: function(url) {
+            // Only allow redirects if they're to the main page
+            if (url === 'https://web.toddleapp.com/' || url === 'https://web.toddleapp.com') {
+                console.log("[Better Toddle] Allowing redirect to main page:", url);
+                originalLocation.href = url;
+            } else {
+                console.log("[Better Toddle] Blocked redirect:", url);
+            }
+        }
+    });
+
+    // Override pushState and replaceState
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+
+    history.pushState = function(state, title, url) {
+        if (url === '/' || url === '' || url === '/') {
+            console.log("[Better Toddle] Allowing pushState to:", url);
+            return originalPushState.call(this, state, title, url);
+        } else {
+            console.log("[Better Toddle] Blocked pushState to:", url);
+        }
+    };
+
+    history.replaceState = function(state, title, url) {
+        if (url === '/' || url === '' || url === '/') {
+            console.log("[Better Toddle] Allowing replaceState to:", url);
+            return originalReplaceState.call(this, state, title, url);
+        } else {
+            console.log("[Better Toddle] Blocked replaceState to:", url);
+        }
+    };
+
     // Check if already on main page
     if (window.location.pathname === '/' || window.location.pathname === '') {
         console.log("[Better Toddle] Already on main page, checking auth...");
