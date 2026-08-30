@@ -178,46 +178,18 @@ const contentMainJs = `(() => {
 
     console.log("[Better Toddle] Main world content script loaded");
 
-    // Block Toddle's redirects by overriding location methods
-    const originalLocationHref = Object.getOwnPropertyDescriptor(window.Location.prototype, 'href');
-    const originalLocationAssign = window.location.assign;
-    const originalLocationReplace = window.location.replace;
-
-    // Override href setter
-    Object.defineProperty(window.Location.prototype, 'href', {
-        set: function(url) {
-            // Only allow redirects to main page
-            if (url === 'https://web.toddleapp.com/' || url === 'https://web.toddleapp.com' || url === '/' || url === '') {
-                console.log("[Better Toddle] Allowing redirect to:", url);
-                originalLocationHref.set.call(this, url);
-            } else {
-                console.log("[Better Toddle] Blocked redirect to:", url);
-            }
-        },
-        get: function() {
-            return originalLocationHref.get.call(this);
+    // Prevent navigation using beforeunload
+    window.addEventListener('beforeunload', (e) => {
+        const currentUrl = window.location.href;
+        console.log("[Better Toddle] beforeunload triggered for:", currentUrl);
+        
+        // Only allow navigation if staying on main page
+        if (currentUrl !== 'https://web.toddleapp.com/' && currentUrl !== 'https://web.toddleapp.com') {
+            e.preventDefault();
+            e.returnValue = '';
+            console.log("[Better Toddle] Blocked navigation from:", currentUrl);
         }
     });
-
-    // Override assign method
-    window.location.assign = function(url) {
-        if (url === 'https://web.toddleapp.com/' || url === 'https://web.toddleapp.com' || url === '/' || url === '') {
-            console.log("[Better Toddle] Allowing assign to:", url);
-            return originalLocationAssign.call(this, url);
-        } else {
-            console.log("[Better Toddle] Blocked assign to:", url);
-        }
-    };
-
-    // Override replace method
-    window.location.replace = function(url) {
-        if (url === 'https://web.toddleapp.com/' || url === 'https://web.toddleapp.com' || url === '/' || url === '') {
-            console.log("[Better Toddle] Allowing replace to:", url);
-            return originalLocationReplace.call(this, url);
-        } else {
-            console.log("[Better Toddle] Blocked replace to:", url);
-        }
-    };
 
     // Override pushState and replaceState
     const originalPushState = history.pushState;
