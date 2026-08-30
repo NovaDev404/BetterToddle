@@ -30,4 +30,4 @@ jobs:
         with:
           name: better-toddle-extension
           path: better-toddle-extension.zip
-          archive: true
+          archive: false
