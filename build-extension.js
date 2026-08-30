@@ -77,7 +77,12 @@ const manifest = {
     content_scripts: [
         {
             matches: ["https://web.toddleapp.com/*"],
-            js: ["content.js"],
+            js: ["content-isolated.js"],
+            run_at: "document_start"
+        },
+        {
+            matches: ["https://web.toddleapp.com/*"],
+            js: ["content-main.js"],
             run_at: "document_start",
             world: "MAIN"
         }
@@ -96,11 +101,64 @@ fs.writeFileSync(
 );
 console.log('Created: manifest.json');
 
-// Create content.js
-const contentJs = `(() => {
+// Create content-isolated.js (has access to chrome API)
+const contentIsolatedJs = `(() => {
     "use strict";
 
-    console.log("[Better Toddle] Checking authentication...");
+    console.log("[Better Toddle] Isolated world content script loaded");
+
+    // Listen for messages from main world script
+    window.addEventListener('better-toddle-takeover', (event) => {
+        const { token } = event.detail;
+        console.log("[Better Toddle] Received takeover request with token");
+
+        // Store token for toddle_api.js to use
+        localStorage.setItem('authToken', token);
+
+        // Inject styles
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = chrome.runtime.getURL('styles.css');
+        (document.head || document.documentElement).appendChild(link);
+
+        // Inject lessons styles
+        const lessonsLink = document.createElement('link');
+        lessonsLink.rel = 'stylesheet';
+        lessonsLink.href = chrome.runtime.getURL('lessons.css');
+        (document.head || document.documentElement).appendChild(lessonsLink);
+
+        // Replace the entire document with Better Toddle
+        const script = document.createElement('script');
+        script.src = chrome.runtime.getURL('script.js');
+        script.onload = function() {
+            console.log("[Better Toddle] App script loaded");
+        };
+        (document.head || document.documentElement).appendChild(script);
+
+        // Load and inject index.html
+        fetch(chrome.runtime.getURL('index.html'))
+            .then(response => response.text())
+            .then(html => {
+                document.documentElement.innerHTML = html;
+                console.log("[Better Toddle] UI loaded");
+            })
+            .catch(err => {
+                console.error("[Better Toddle] Failed to load UI:", err);
+            });
+    });
+})();`;
+
+fs.writeFileSync(
+    path.join(extensionDir, 'content-isolated.js'),
+    contentIsolatedJs
+);
+console.log('Created: content-isolated.js');
+
+// Create content-main.js (runs in page context, can access localStorage)
+const contentMainJs = `(() => {
+    "use strict";
+
+    console.log("[Better Toddle] Main world content script loaded");
 
     // Check if user is logged in
     const userInfo = localStorage.getItem('userInfo');
@@ -120,42 +178,18 @@ const contentJs = `(() => {
         return;
     }
 
-    console.log("[Better Toddle] User authenticated, taking over...");
+    console.log("[Better Toddle] User authenticated, requesting takeover...");
 
-    // Store token for toddle_api.js to use
-    localStorage.setItem('authToken', token);
-
-    // Replace the entire document with Better Toddle
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('script.js');
-    script.onload = function() {
-        console.log("[Better Toddle] App script loaded");
-    };
-    (document.head || document.documentElement).appendChild(script);
-
-    // Inject styles
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = chrome.runtime.getURL('styles.css');
-    (document.head || document.documentElement).appendChild(link);
-
-    // Inject lessons styles
-    const lessonsLink = document.createElement('link');
-    lessonsLink.rel = 'stylesheet';
-    lessonsLink.href = chrome.runtime.getURL('lessons.css');
-    (document.head || document.documentElement).appendChild(lessonsLink);
-
-    // Load and inject index.html
-    fetch(chrome.runtime.getURL('index.html'))
-        .then(response => response.text())
-        .then(html => {
-            document.documentElement.innerHTML = html;
-            console.log("[Better Toddle] UI loaded");
-        })
-        .catch(err => {
-            console.error("[Better Toddle] Failed to load UI:", err);
-        });
+    // Send token to isolated world script
+    const event = new CustomEvent('better-toddle-takeover', { detail: { token } });
+    window.dispatchEvent(event);
 })();`;
+
+fs.writeFileSync(
+    path.join(extensionDir, 'content-main.js'),
+    contentMainJs
+);
+console.log('Created: content-main.js');
 
 fs.writeFileSync(
     path.join(extensionDir, 'content.js'),
