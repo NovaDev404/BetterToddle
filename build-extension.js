@@ -115,25 +115,32 @@ const contentIsolatedJs = `(() => {
         // Store token for toddle_api.js to use
         localStorage.setItem('authToken', token);
 
+        // Stop all Toddle scripts and clear the page
+        const stopPropagation = (e) => {
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+        };
+
+        // Prevent Toddle's React from erroring
+        window.addEventListener('error', stopPropagation, true);
+        window.addEventListener('unhandledrejection', stopPropagation, true);
+
+        // Clear the entire document
+        document.documentElement.innerHTML = '';
+        document.head.innerHTML = '';
+        document.body.innerHTML = '';
+
         // Inject styles
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = chrome.runtime.getURL('styles.css');
-        (document.head || document.documentElement).appendChild(link);
+        document.head.appendChild(link);
 
         // Inject lessons styles
         const lessonsLink = document.createElement('link');
         lessonsLink.rel = 'stylesheet';
         lessonsLink.href = chrome.runtime.getURL('lessons.css');
-        (document.head || document.documentElement).appendChild(lessonsLink);
-
-        // Replace the entire document with Better Toddle
-        const script = document.createElement('script');
-        script.src = chrome.runtime.getURL('script.js');
-        script.onload = function() {
-            console.log("[Better Toddle] App script loaded");
-        };
-        (document.head || document.documentElement).appendChild(script);
+        document.head.appendChild(lessonsLink);
 
         // Load and inject index.html
         fetch(chrome.runtime.getURL('index.html'))
@@ -141,6 +148,14 @@ const contentIsolatedJs = `(() => {
             .then(html => {
                 document.documentElement.innerHTML = html;
                 console.log("[Better Toddle] UI loaded");
+
+                // Load our script after HTML is in place
+                const script = document.createElement('script');
+                script.src = chrome.runtime.getURL('script.js');
+                script.onload = function() {
+                    console.log("[Better Toddle] App script loaded");
+                };
+                document.body.appendChild(script);
             })
             .catch(err => {
                 console.error("[Better Toddle] Failed to load UI:", err);
