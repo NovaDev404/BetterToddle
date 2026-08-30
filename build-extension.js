@@ -178,31 +178,53 @@ const contentMainJs = `(() => {
 
     console.log("[Better Toddle] Main world content script loaded");
 
-    // Block Toddle's redirects by overriding window.location
-    const originalLocation = window.location;
-    let currentUrl = window.location.href;
+    // Block Toddle's redirects by overriding location methods
+    const originalLocationHref = Object.getOwnPropertyDescriptor(window.Location.prototype, 'href');
+    const originalLocationAssign = window.location.assign;
+    const originalLocationReplace = window.location.replace;
 
-    Object.defineProperty(window, 'location', {
-        get: function() {
-            return originalLocation;
-        },
+    // Override href setter
+    Object.defineProperty(window.Location.prototype, 'href', {
         set: function(url) {
-            // Only allow redirects if they're to the main page
-            if (url === 'https://web.toddleapp.com/' || url === 'https://web.toddleapp.com') {
-                console.log("[Better Toddle] Allowing redirect to main page:", url);
-                originalLocation.href = url;
+            // Only allow redirects to main page
+            if (url === 'https://web.toddleapp.com/' || url === 'https://web.toddleapp.com' || url === '/' || url === '') {
+                console.log("[Better Toddle] Allowing redirect to:", url);
+                originalLocationHref.set.call(this, url);
             } else {
-                console.log("[Better Toddle] Blocked redirect:", url);
+                console.log("[Better Toddle] Blocked redirect to:", url);
             }
+        },
+        get: function() {
+            return originalLocationHref.get.call(this);
         }
     });
+
+    // Override assign method
+    window.location.assign = function(url) {
+        if (url === 'https://web.toddleapp.com/' || url === 'https://web.toddleapp.com' || url === '/' || url === '') {
+            console.log("[Better Toddle] Allowing assign to:", url);
+            return originalLocationAssign.call(this, url);
+        } else {
+            console.log("[Better Toddle] Blocked assign to:", url);
+        }
+    };
+
+    // Override replace method
+    window.location.replace = function(url) {
+        if (url === 'https://web.toddleapp.com/' || url === 'https://web.toddleapp.com' || url === '/' || url === '') {
+            console.log("[Better Toddle] Allowing replace to:", url);
+            return originalLocationReplace.call(this, url);
+        } else {
+            console.log("[Better Toddle] Blocked replace to:", url);
+        }
+    };
 
     // Override pushState and replaceState
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
     history.pushState = function(state, title, url) {
-        if (url === '/' || url === '' || url === '/') {
+        if (!url || url === '/' || url === '' || url === '/') {
             console.log("[Better Toddle] Allowing pushState to:", url);
             return originalPushState.call(this, state, title, url);
         } else {
@@ -211,7 +233,7 @@ const contentMainJs = `(() => {
     };
 
     history.replaceState = function(state, title, url) {
-        if (url === '/' || url === '' || url === '/') {
+        if (!url || url === '/' || url === '' || url === '/') {
             console.log("[Better Toddle] Allowing replaceState to:", url);
             return originalReplaceState.call(this, state, title, url);
         } else {
