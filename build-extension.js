@@ -9,47 +9,42 @@ if (fs.existsSync(extensionDir)) {
 }
 fs.mkdirSync(extensionDir, { recursive: true });
 
-// Files to copy from public
-const filesToCopy = [
-    'index.html',
-    'styles.css',
-    'script.js',
-    'auth.js',
-    'lessons.js',
-    'lessons.css',
-    'login/login.js',
-    'includes/home.html',
-    'includes/home.css',
-    'includes/home.js',
-    'includes/timetable.html',
-    'includes/timetable.css',
-    'includes/timetable.js',
-    'includes/viewer.html',
-    'includes/viewer.css',
-    'includes/viewer.js',
-    'images/logo_full.png',
-    'images/loading.gif',
-    'toastui-calendar/toastui-calendar.css',
-    'toastui-calendar/toastui-calendar.min.js'
-];
+// Function to recursively get all files in a directory
+function getAllFiles(dirPath, arrayOfFiles = []) {
+    const files = fs.readdirSync(dirPath);
 
-// Copy files
+    files.forEach(file => {
+        const filePath = path.join(dirPath, file);
+        const stat = fs.statSync(filePath);
+
+        if (stat.isDirectory()) {
+            // Skip node_modules directory
+            if (file !== 'node_modules') {
+                arrayOfFiles = getAllFiles(filePath, arrayOfFiles);
+            }
+        } else {
+            arrayOfFiles.push(filePath);
+        }
+    });
+
+    return arrayOfFiles;
+}
+
+// Copy all files from public directory dynamically
 const publicDir = path.join(__dirname, 'public');
-filesToCopy.forEach(file => {
-    const src = path.join(publicDir, file);
-    const dest = path.join(extensionDir, file);
-    const destDir = path.dirname(dest);
+const allFiles = getAllFiles(publicDir);
+
+allFiles.forEach(srcPath => {
+    const relativePath = path.relative(publicDir, srcPath);
+    const destPath = path.join(extensionDir, relativePath);
+    const destDir = path.dirname(destPath);
     
     if (!fs.existsSync(destDir)) {
         fs.mkdirSync(destDir, { recursive: true });
     }
     
-    if (fs.existsSync(src)) {
-        fs.copyFileSync(src, dest);
-        console.log(`Copied: ${file}`);
-    } else {
-        console.warn(`Warning: ${file} not found`);
-    }
+    fs.copyFileSync(srcPath, destPath);
+    console.log(`Copied: ${relativePath}`);
 });
 
 // Read and modify toddle_api.js for extension
@@ -183,6 +178,13 @@ const contentMainJs = `(() => {
 
     console.log("[Better Toddle] Main world content script loaded");
 
+    // Check if already on main page
+    if (window.location.pathname === '/' || window.location.pathname === '') {
+        console.log("[Better Toddle] Already on main page, checking auth...");
+    } else {
+        console.log("[Better Toddle] On subpage:", window.location.pathname);
+    }
+
     // Check if user is logged in
     const userInfo = localStorage.getItem('userInfo');
     let token = null;
@@ -201,7 +203,14 @@ const contentMainJs = `(() => {
         return;
     }
 
-    console.log("[Better Toddle] User authenticated, requesting takeover...");
+    // If on a subpage and logged in, redirect to main page
+    if (window.location.pathname !== '/' && window.location.pathname !== '') {
+        console.log("[Better Toddle] Redirecting to main page...");
+        window.location.href = 'https://web.toddleapp.com/';
+        return;
+    }
+
+    console.log("[Better Toddle] User authenticated on main page, requesting takeover...");
 
     // Send token to isolated world script
     const event = new CustomEvent('better-toddle-takeover', { detail: { token } });
