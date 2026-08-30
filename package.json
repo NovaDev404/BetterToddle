@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "archiver": "^7.0.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "express-http-proxy": "^2.1.2",
