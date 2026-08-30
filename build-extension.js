@@ -68,6 +68,26 @@ fs.writeFileSync(
 );
 console.log('Modified and copied: toddle_api.js');
 
+// Parse index.html to extract scripts and styles dynamically
+const indexHtml = fs.readFileSync(path.join(publicDir, 'index.html'), 'utf8');
+
+// Extract script src attributes
+const scriptMatches = indexHtml.match(/<script[^>]*src=["']([^"']+)["'][^>]*>/g) || [];
+const scripts = scriptMatches.map(match => {
+    const srcMatch = match.match(/src=["']([^"']+)["']/);
+    return srcMatch ? srcMatch[1] : null;
+}).filter(Boolean);
+
+// Extract stylesheet href attributes
+const styleMatches = indexHtml.match(/<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/g) || [];
+const styles = styleMatches.map(match => {
+    const hrefMatch = match.match(/href=["']([^"']+)["']/);
+    return hrefMatch ? hrefMatch[1] : null;
+}).filter(Boolean);
+
+console.log('Extracted scripts:', scripts);
+console.log('Extracted styles:', styles);
+
 // Create manifest.json
 const manifest = {
     manifest_version: 3,
@@ -89,7 +109,7 @@ const manifest = {
     ],
     web_accessible_resources: [
         {
-            resources: ["index.html", "styles.css", "script.js", "auth.js", "toddle_api.js", "lessons.js", "lessons.css", "login/login.js", "includes/*", "images/*", "toastui-calendar/*"],
+            resources: ["*"],
             matches: ["https://web.toddleapp.com/*"]
         }
     ]
@@ -115,47 +135,35 @@ const contentIsolatedJs = `(() => {
         // Store token for toddle_api.js to use
         localStorage.setItem('authToken', token);
 
-        // Stop all Toddle scripts and clear the page
-        const stopPropagation = (e) => {
-            e.stopImmediatePropagation();
-            e.stopPropagation();
-        };
-
-        // Prevent Toddle's React from erroring
-        window.addEventListener('error', stopPropagation, true);
-        window.addEventListener('unhandledrejection', stopPropagation, true);
-
         // Clear the entire document
         document.documentElement.innerHTML = '';
-        document.head.innerHTML = '';
-        document.body.innerHTML = '';
 
-        // Inject styles
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = chrome.runtime.getURL('styles.css');
-        document.head.appendChild(link);
+        // Load scripts dynamically (extracted from index.html)
+        const scripts = ${JSON.stringify(scripts)};
+        scripts.forEach(script => {
+            const scriptEl = document.createElement('script');
+            scriptEl.src = chrome.runtime.getURL(script);
+            document.head.appendChild(scriptEl);
+        });
 
-        // Inject lessons styles
-        const lessonsLink = document.createElement('link');
-        lessonsLink.rel = 'stylesheet';
-        lessonsLink.href = chrome.runtime.getURL('lessons.css');
-        document.head.appendChild(lessonsLink);
+        // Load styles dynamically (extracted from index.html)
+        const styles = ${JSON.stringify(styles)};
+        styles.forEach(style => {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = chrome.runtime.getURL(style);
+            document.head.appendChild(link);
+        });
 
-        // Load and inject index.html
+        // Load and inject index.html body content
         fetch(chrome.runtime.getURL('index.html'))
             .then(response => response.text())
             .then(html => {
-                document.documentElement.innerHTML = html;
+                // Extract body content
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                document.body.innerHTML = doc.body.innerHTML;
                 console.log("[Better Toddle] UI loaded");
-
-                // Load our script after HTML is in place
-                const script = document.createElement('script');
-                script.src = chrome.runtime.getURL('script.js');
-                script.onload = function() {
-                    console.log("[Better Toddle] App script loaded");
-                };
-                document.body.appendChild(script);
             })
             .catch(err => {
                 console.error("[Better Toddle] Failed to load UI:", err);
