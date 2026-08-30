@@ -191,12 +191,6 @@ fs.writeFileSync(
 );
 console.log('Created: content-main.js');
 
-fs.writeFileSync(
-    path.join(extensionDir, 'content.js'),
-    contentJs
-);
-console.log('Created: content.js');
-
 // Create the zip file
 const output = fs.createWriteStream(path.join(__dirname, 'better-toddle-extension.zip'));
 const archive = archiver('zip', { zlib: { level: 9 } });
