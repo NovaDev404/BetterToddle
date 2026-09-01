@@ -16,10 +16,8 @@ function loadViewerContent(url, title, mimeType) {
             loading.style.display = 'flex';
 
             const iframe = document.createElement("iframe");
-            if (mimeType === "application/pdf") {
-                iframe.src = `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(url)}`;
-            } else if (mimeType?.includes("wordprocessingml") || mimeType === "application/msword" || mimeType?.includes("presentationml") || mimeType === "application/vnd.ms-powerpoint") {
-                iframe.src = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+            if (mimeType?.includes("wordprocessingml") || mimeType === "application/msword" || mimeType?.includes("presentationml") || mimeType === "application/vnd.ms-powerpoint") {
+                iframe.src = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}`;
             } else {
                 iframe.src = url;
             }
