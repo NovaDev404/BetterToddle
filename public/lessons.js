@@ -45,6 +45,12 @@ function getLessonTypeLabel(info) {
         switch (info.assessmentType) {
             case "le":
                 return "Lesson";
+            case "aol":
+                return "OF Assessment";
+            case "afl":
+                return "FOR Assessment";
+            case "ai_tutor":
+                return "AI Tutor";
             case "worksheet":
                 return "Worksheet";
             default:
@@ -56,39 +62,26 @@ function getLessonTypeLabel(info) {
         const mime = info.subtype;
         const attachmentType = info.attachmentType;
 
-        if (mime === "application/vnd.openxmlformats-officedocument.presentationml.presentation" || mime === "application/vnd.ms-powerpoint") {
-            return "Presentation";
+        switch (true) {
+            case mime === "application/vnd.openxmlformats-officedocument.presentationml.presentation" || mime === "application/vnd.ms-powerpoint":
+                return "Presentation";
+            case mime === "application/pdf":
+                return "PDF";
+            case mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/msword":
+                return "Document";
+            case mime?.startsWith("audio/"):
+                return "Audio";
+            case mime?.startsWith("video/"):
+                return "Video";
+            case mime?.startsWith("image/"):
+                return "Image";
+            case attachmentType === "NOTE":
+                return "Note";
+            case attachmentType === "LINK":
+                return "Link";
+            default:
+                return "File";
         }
-
-        if (mime === "application/pdf") {
-            return "PDF";
-        }
-
-        if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/msword") {
-            return "Document";
-        }
-
-        if (mime?.startsWith("audio/")) {
-            return "Audio";
-        }
-
-        if (mime?.startsWith("video/")) {
-            return "Video";
-        }
-
-        if (mime?.startsWith("image/")) {
-            return "Image";
-        }
-
-        if (attachmentType === "NOTE") {
-            return "Note";
-        }
-
-        if (attachmentType === "LINK") {
-            return "Link";
-        }
-
-        return "File";
     }
 
     if (info.category === "folder") {
@@ -179,7 +172,8 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
             const info = classifyCourseFlowNode(node);
             const lessonType = getLessonTypeLabel(info);
             const label = info.attachmentType === "NOTE" ? "Note" : node.label;
-            html += `<button class="lesson-item" onclick="sidebarLessonsSubmenuNavigate(this)" data-lesson-type="${lessonType}" data-node-id="${node.id}">${icon}<span class="lesson-item-title">${label}</span></button>`;
+            const classroomId = node.item?.assignments?.edges?.[0]?.id || '';
+            html += `<button class="lesson-item" onclick="sidebarLessonsSubmenuNavigate(this)" data-lesson-type="${lessonType}" data-node-id="${node.id}" data-classroom-id="${classroomId}">${icon}<span class="lesson-item-title">${label}</span></button>`;
         }
         
         return html;
@@ -192,6 +186,12 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
             switch (info.assessmentType) {
                 case "le":
                     return '<img class="lesson-item-icon" src="/icons/24/solid/book-open.svg" alt="Lesson" width="16" height="16" />';
+                case "aol":
+                    return '<img class="lesson-item-icon" src="/icons/24/solid/document-check.svg" alt="OF Assessment" width="16" height="16" />';
+                case "afl":
+                    return '<img class="lesson-item-icon" src="/icons/24/solid/document-check.svg" alt="FOR Assessment" width="16" height="16" />';
+                case "ai_tutor":
+                    return '<img class="lesson-item-icon" src="/icons/24/solid/sparkles.svg" alt="AI Tutor" width="16" height="16" />';
                 case "worksheet":
                     return '<img class="lesson-item-icon" src="/icons/24/solid/document-text.svg" alt="Worksheet" width="16" height="16" />';
                 default:
@@ -262,10 +262,15 @@ async function sidebarLessonsSubmenuNavigate(navItem) {
         const itemName = navItem.querySelector('.lesson-item-title')?.textContent.trim();
         const lessonType = navItem.getAttribute('data-lesson-type');
         const nodeId = navItem.getAttribute('data-node-id');
+        const classroomId = navItem.getAttribute('data-classroom-id');
 
         if (nodeId && lessonType !== "Note" && lessonType !== "Link") {
             const node = currentCourseFlowNodes.get(nodeId);
             if (node && node.item) {
+                if (node.resourceType === 'ASSESSMENT' && classroomId) {
+                    await navigateTo("lesson_viewer", false, { classroomId, title: itemName });
+                }
+                
                 const url = node.item.signedUrl || node.item.url;
                 const mimeType = node.item.mimeType;
 

@@ -29,7 +29,8 @@ let sidebarCoursesSubmenuContent = `
 
 let mainHomeContent = fetch('includes/home.html').then(res => res.text());
 let mainTimetableContent = fetch('includes/timetable.html').then(res => res.text());
-let mainViewerContent = fetch('includes/viewer.html').then(res => res.text());
+let mainFileViewerContent = fetch('includes/file_viewer.html').then(res => res.text());
+let mainLessonViewerContent = fetch('includes/lesson_viewer.html').then(res => res.text());
 let cachedStudentCourses = null;
 
 function updateUrl(page, query = "") {
@@ -114,6 +115,12 @@ async function navigateTo(page, force = false, params = {}) {
             if (currentUrl === params.url && currentTitle === params.title && currentType === params.mimeType) {
                 return;
             }
+        } else if (page === "lesson_viewer") {
+            const currentClassroomId = urlParams.get('classroomId');
+            const currentTitle = urlParams.get('title');
+            if (currentClassroomId === params.classroomId && currentTitle === params.title) {
+                return;
+            }
         } else {
             return;
         }
@@ -129,13 +136,23 @@ async function navigateTo(page, force = false, params = {}) {
         initTimetable();
         updateUrl("timetable");
     } else if (page === "viewer") {
-        populateMainContent(await mainViewerContent);
+        populateMainContent(await mainFileViewerContent);
         const viewerParams = new URLSearchParams();
         if (params.url) viewerParams.set('url', params.url);
         if (params.title) viewerParams.set('title', params.title);
         if (params.mimeType) viewerParams.set('type', params.mimeType);
         updateUrl("viewer", viewerParams.toString());
         setTimeout(() => loadViewerContent(params.url, params.title, params.mimeType), 100);
+        loadingOverlay(false);
+    } else if (page === "lesson_viewer") {
+        populateMainContent(await mainLessonViewerContent);
+        const viewerParams = new URLSearchParams();
+        const classroomId = params.classroomId || urlParams.get('classroomId');
+        const title = params.title || urlParams.get('title');
+        if (classroomId) viewerParams.set('classroomId', classroomId);
+        if (title) viewerParams.set('title', title);
+        updateUrl("lesson_viewer", viewerParams.toString());
+        setTimeout(() => loadLessonContent(classroomId, title), 100);
         loadingOverlay(false);
     }
 }
