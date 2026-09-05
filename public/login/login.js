@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (code) {
         localStorage.setItem("authToken", "Bearer " + code);
         if (cookies) {
-            const essentialCookies = ['lhst', 'rhst', '_twpid'];
+            const essentialCookies = ['lhst', 'rhst'];
             const cookiePairs = cookies.split('; ');
             const filteredCookies = cookiePairs.filter(pair => {
                 const cookieName = pair.split('=')[0];
