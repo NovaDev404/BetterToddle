@@ -5,7 +5,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (code) {
         localStorage.setItem("authToken", "Bearer " + code);
         if (cookies) {
-            localStorage.setItem("authCookies", cookies);
+            const essentialCookies = ['lhst', 'rhst', '_twpid'];
+            const cookiePairs = cookies.split('; ');
+            const filteredCookies = cookiePairs.filter(pair => {
+                const cookieName = pair.split('=')[0];
+                return essentialCookies.includes(cookieName);
+            }).join('; ');
+            localStorage.setItem("authCookies", filteredCookies);
         }
         window.location.href = "/";
     }
