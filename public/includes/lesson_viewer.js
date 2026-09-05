@@ -60,28 +60,9 @@ async function loadLessonContent(classroomId, title) {
             if (image) {
                 const imageDiv = document.createElement('div');
                 imageDiv.className = 'lesson-image';
-                const thumberUrl = `/toddle-image/thumber/fit-in/1024x1024/${encodeURIComponent(image)}`;
-                
-                // Fetch image with auth cookies
-                const authCookies = localStorage.getItem("authCookies");
-                const headers = {};
-                if (authCookies) {
-                    headers["x-auth-cookies"] = authCookies;
-                }
-                
-                fetch(thumberUrl, { 
-                    headers,
-                    credentials: 'include'
-                })
-                    .then(response => response.blob())
-                    .then(blob => {
-                        const blobUrl = URL.createObjectURL(blob);
-                        imageDiv.innerHTML = `<img src="${blobUrl}" alt="Lesson Image">`;
-                        content.appendChild(imageDiv);
-                    })
-                    .catch(err => {
-                        console.error('Failed to load image:', err);
-                    });
+                const thumberUrl = `https://cloud.toddleapp.com/thumber/fit-in/1024x1024/${image}`;
+                imageDiv.innerHTML = `<img src="${thumberUrl}" alt="Lesson Image">`;
+                content.appendChild(imageDiv);
             }
 
             if (goals && goals.length > 0 && goals[0].value) {
