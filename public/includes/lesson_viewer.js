@@ -55,15 +55,6 @@ async function loadLessonContent(classroomId, title) {
             const lessonPlan = allFields.find(field => field.uid === 'description').value || null;
             const goals = allFields.find(field => field.uid === 'goals').value || null;
             const resources = courseDetails.content.organizationResources.edges || null;
-            const image = courseDetails.content.image?.value || null;
-
-            if (image) {
-                const imageDiv = document.createElement('div');
-                imageDiv.className = 'lesson-image';
-                const thumberUrl = `https://cloud.toddleapp.com/thumber/fit-in/1024x1024/${image}`;
-                imageDiv.innerHTML = `<img src="${thumberUrl}" alt="Lesson Image">`;
-                content.appendChild(imageDiv);
-            }
 
             if (goals && goals.length > 0 && goals[0].value) {
                 const goalsDiv = document.createElement('div');

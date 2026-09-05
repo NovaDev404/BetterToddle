@@ -5,19 +5,6 @@
     position: relative;
 }
 
-.lesson-image {
-    width: 100%;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.lesson-image img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
 .lesson-viewer-loading {
     position: absolute;
     top: 0;
