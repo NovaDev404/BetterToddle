@@ -32,7 +32,8 @@ function checkTokenValid(token) {
 
 let isAuthenticated = localStorage.getItem("authToken") ? true : false;
 let isTokenValid = checkTokenValid(localStorage.getItem("authToken"))
+let hasAuthCookies = localStorage.getItem("authCookies") ? true : false;
 
-if (!isAuthenticated || !isTokenValid) {
+if (!isAuthenticated || !isTokenValid || !hasAuthCookies) {
     window.location.href = "/login/";
 }
