@@ -61,7 +61,25 @@ async function loadLessonContent(classroomId, title) {
                 const imageDiv = document.createElement('div');
                 imageDiv.className = 'lesson-image';
                 const thumberUrl = `/toddle-image/thumber/fit-in/1024x1024/${encodeURIComponent(image)}`;
-                imageDiv.innerHTML = `<img src="${thumberUrl}" alt="Lesson Image">`;
+                
+                // Fetch image with auth cookies
+                const authCookies = localStorage.getItem("authCookies");
+                const headers = {};
+                if (authCookies) {
+                    headers["x-auth-cookies"] = authCookies;
+                }
+                
+                fetch(thumberUrl, { headers })
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const blobUrl = URL.createObjectURL(blob);
+                        imageDiv.innerHTML = `<img src="${blobUrl}" alt="Lesson Image">`;
+                    })
+                    .catch(err => {
+                        console.error('Failed to load image:', err);
+                        imageDiv.innerHTML = `<img src="${thumberUrl}" alt="Lesson Image">`;
+                    });
+                
                 content.appendChild(imageDiv);
             }
 
