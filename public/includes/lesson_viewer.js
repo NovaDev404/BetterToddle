@@ -60,7 +60,7 @@ async function loadLessonContent(classroomId, title) {
             if (image) {
                 const imageDiv = document.createElement('div');
                 imageDiv.className = 'lesson-image';
-                const thumberUrl = `/toddle-image/thumber/fit-in/1024x1024/${image}`;
+                const thumberUrl = `/toddle-image/thumber/fit-in/1024x1024/${encodeURIComponent(image)}`;
                 imageDiv.innerHTML = `<img src="${thumberUrl}" alt="Lesson Image">`;
                 content.appendChild(imageDiv);
             }

@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create modal
             const modal = document.createElement('div');
             modal.className = 'modal-overlay';
-            
+
             modal.innerHTML = `
                 <div class="modal-content">
                     <h2 class="modal-title">Auth Token Login</h2>
@@ -212,32 +212,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div style="margin: 20px 0;">
                         <input type="text" id="authTokenInput" placeholder="Paste your auth token here" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;" />
                     </div>
+                    <p class="modal-text">Paste your Toddle cookies (lhst and rhst) below:</p>
+                    <div style="margin: 20px 0;">
+                        <input type="text" id="authCookiesInput" placeholder="Paste your cookies here (lhst=...; rhst=...)" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;" />
+                    </div>
                     <div class="modal-buttons">
                         <button id="submitTokenBtn" class="modal-copy-btn" style="padding: 10px 20px;">Login</button>
                         <button id="closeModalBtn" class="modal-close-btn">Close</button>
                     </div>
                 </div>
             `;
-            
+
             document.body.appendChild(modal);
-            
+
             // Submit button functionality
             document.getElementById('submitTokenBtn').addEventListener('click', function() {
                 const token = document.getElementById('authTokenInput').value.trim();
+                const cookies = document.getElementById('authCookiesInput').value.trim();
                 let formattedToken = token;
                 if (/^Bearer\s+\S+$/.test(formattedToken)) {
                     localStorage.setItem("authToken", formattedToken);
+                    if (cookies) {
+                        const essentialCookies = ['lhst', 'rhst'];
+                        const cookiePairs = cookies.split('; ');
+                        const filteredCookies = cookiePairs.filter(pair => {
+                            const cookieName = pair.split('=')[0];
+                            return essentialCookies.includes(cookieName);
+                        }).join('; ');
+                        localStorage.setItem("authCookies", filteredCookies);
+                    }
                     window.location.href = "/";
                 } else {
                     alert('Invalid token format. Please enter a valid auth token.');
                 }
             });
-            
+
             // Close button functionality
             document.getElementById('closeModalBtn').addEventListener('click', function() {
                 document.body.removeChild(modal);
             });
-            
+
             // Close on background click
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) {

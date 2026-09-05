@@ -52,7 +52,7 @@ app.use('/:region/graphql', proxy((req) => {
 // Toddle Image/Thumber Proxy
 app.use('/toddle-image', proxy('https://cloud.toddleapp.com', {
   proxyReqPathResolver: (req) => {
-    return req.url;
+    return decodeURIComponent(req.url);
   },
   proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
     proxyReqOpts.headers = proxyReqOpts.headers || {};
