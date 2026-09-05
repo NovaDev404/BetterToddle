@@ -69,18 +69,19 @@ async function loadLessonContent(classroomId, title) {
                     headers["x-auth-cookies"] = authCookies;
                 }
                 
-                fetch(thumberUrl, { headers })
+                fetch(thumberUrl, { 
+                    headers,
+                    credentials: 'include'
+                })
                     .then(response => response.blob())
                     .then(blob => {
                         const blobUrl = URL.createObjectURL(blob);
                         imageDiv.innerHTML = `<img src="${blobUrl}" alt="Lesson Image">`;
+                        content.appendChild(imageDiv);
                     })
                     .catch(err => {
                         console.error('Failed to load image:', err);
-                        imageDiv.innerHTML = `<img src="${thumberUrl}" alt="Lesson Image">`;
                     });
-                
-                content.appendChild(imageDiv);
             }
 
             if (goals && goals.length > 0 && goals[0].value) {
