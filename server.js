@@ -33,7 +33,7 @@ app.use('/:region/graphql', proxy((req) => {
   },
   proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
     proxyReqOpts.headers = proxyReqOpts.headers || {};
-    
+
     if (srcReq.headers['authorization']) {
       proxyReqOpts.headers['authorization'] = srcReq.headers['authorization'];
     }
@@ -44,7 +44,32 @@ app.use('/:region/graphql', proxy((req) => {
       proxyReqOpts.headers['user-agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36';
     }
     proxyReqOpts.headers['x-tod-source'] = 'WEB';
-    
+
+    return proxyReqOpts;
+  }
+}));
+
+// Toddle Image/Thumber Proxy
+app.use('/toddle-image', proxy('https://cloud.toddleapp.com', {
+  proxyReqPathResolver: (req) => {
+    return req.url;
+  },
+  proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+    proxyReqOpts.headers = proxyReqOpts.headers || {};
+
+    // Use cookies from request header if available (from localStorage)
+    if (srcReq.headers['x-auth-cookies']) {
+      proxyReqOpts.headers['cookie'] = srcReq.headers['x-auth-cookies'];
+    }
+
+    proxyReqOpts.headers['origin'] = 'https://web.toddleapp.com';
+    proxyReqOpts.headers['referer'] = 'https://web.toddleapp.com/';
+    if (srcReq.headers['user-agent']) {
+      proxyReqOpts.headers['user-agent'] = srcReq.headers['user-agent'];
+    } else {
+      proxyReqOpts.headers['user-agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36';
+    }
+
     return proxyReqOpts;
   }
 }));

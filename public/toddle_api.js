@@ -6,6 +6,18 @@ const payload = JSON.parse(decodeBase64(parts[1]));
 let studentCourses = null;
 let studentDetails = null;
 
+function getAuthHeaders() {
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": token
+  };
+  const authCookies = localStorage.getItem("authCookies");
+  if (authCookies) {
+    headers["x-auth-cookies"] = authCookies;
+  }
+  return headers;
+}
+
 function getRegion() {
   const region = payload.region;
   return region;
@@ -55,10 +67,7 @@ async function getStudentDetails() {
   try {
     const res = await fetch("/" + getRegion() + "/graphql", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": token
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(requestPayload)
     });
 
@@ -103,10 +112,7 @@ async function getStudentPreferences() {
   try {
     const res = await fetch("/" + getRegion() + "/graphql", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": token
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(requestPayload)
     });
 
@@ -140,10 +146,7 @@ async function getStudentCourses() {
   try {
     const res = await fetch("/" + getRegion() + "/graphql", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": token
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(requestPayload)
     });
 
@@ -188,10 +191,7 @@ async function getStudentTimetable() {
   try {
     const res = await fetch("/" + getRegion() + "/graphql", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": token
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(requestPayload)
     });
 
@@ -252,10 +252,7 @@ async function getCourseFlow(courseID, learningCourseID) {
   try {
     const res = await fetch("/" + getRegion() + "/graphql", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": token
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(requestPayload)
     });
 
@@ -311,10 +308,7 @@ async function getCourseDetails(classroomId) {
   try {
     const res = await fetch("/" + getRegion() + "/graphql", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": token
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(requestPayload)
     });
 

@@ -1,8 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
+    const cookies = urlParams.get('cookies');
     if (code) {
         localStorage.setItem("authToken", "Bearer " + code);
+        if (cookies) {
+            localStorage.setItem("authCookies", cookies);
+        }
         window.location.href = "/";
     }
 });
@@ -43,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h2 class="modal-title">iOS Shortcuts Login</h2>
                     <p class="modal-text">Follow these steps to login using iOS Shortcuts:</p>
                     <ol class="modal-steps">
-                        <li><a href="https://www.icloud.com/shortcuts/4dfbaef9d055422dbb8464768b25b12e" target="_blank" style="color: #007AFF;">Install the iOS Shortcut</a></li>
+                        <li><a href="https://www.icloud.com/shortcuts/e779e51678724cf4a8c3220a270bede3" target="_blank" style="color: #007AFF;">Install the iOS Shortcut</a></li>
                         <li>Make sure <code>Allow Running Scripts</code> is enabled in Settings: <code>Apps > Shortcuts > Advanced</code>
                         <li>Login to the Toddle website</li>
                         <li>Tap Share, then "View More"</li>
@@ -74,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const devToolsBtn = document.getElementById('devToolsBtn');
     if (devToolsBtn) {
         devToolsBtn.addEventListener('click', function() {
-            const command = `let u=JSON.parse(localStorage.getItem("userInfo"));location.href="https://bettertoddle.epicsitez.com/login/?code="+encodeURIComponent(u.jwt||u.token);`;
+            const command = `let u=JSON.parse(localStorage.getItem("userInfo"));let c=document.cookie;location.href="https://bettertoddle.epicsitez.com/login/?code="+encodeURIComponent(u.jwt||u.token)+"&cookies="+encodeURIComponent(c);`;
             
             // Create modal
             const modal = document.createElement('div');
@@ -132,8 +136,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookmarkletBtn = document.getElementById('bookmarkletBtn');
     if (bookmarkletBtn) {
         bookmarkletBtn.addEventListener('click', function() {
-            const bookmarkletCode = `javascript:(function(){let u=JSON.parse(localStorage.getItem("userInfo"));location.href="https://bettertoddle.epicsitez.com/login/?code="+encodeURIComponent(u.jwt||u.token);})()`;
-            const bookmarkletEncoded = `javascript:(function()%7Blet%20u%3DJSON.parse(localStorage.getItem(%22userInfo%22))%3Blocation.href%3D%22https%3A%2F%2Fbettertoddle.epicsitez.com%2Flogin%2F%3Fcode%3D%22%2BencodeURIComponent(u.jwt%7C%7Cu.token)%3B%7D)()%3B`;
+            const bookmarkletCode = `javascript:(function(){let u=JSON.parse(localStorage.getItem("userInfo"));let c=document.cookie;location.href="https://bettertoddle.epicsitez.com/login/?code="+encodeURIComponent(u.jwt||u.token)+"&cookies="+encodeURIComponent(c);})()`;
+            const bookmarkletEncoded = `javascript:(function()%7Blet%20u%3DJSON.parse(localStorage.getItem(%22userInfo%22))%3Blet%20c%3Ddocument.cookie%3Blocation.href%3D%22https%3A%2F%2Fbettertoddle.epicsitez.com%2Flogin%2F%3Fcode%3D%22%2BencodeURIComponent(u.jwt%7C%7Cu.token)%2B%22%26cookies%3D%22%2BencodeURIComponent(c)%3B%7D)()%3B`;
             
             // Create modal
             const modal = document.createElement('div');
