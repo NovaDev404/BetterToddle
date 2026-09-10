@@ -3,7 +3,7 @@
 ## Progress
 - [x] Login page
 - [x] Timetable
-- [ ] Courses
+- [x] Courses `Partially`
 - [ ] Home page
 - [ ] Assessments
 - [ ] Messages
