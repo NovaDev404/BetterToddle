@@ -82,6 +82,7 @@ ul {
     font-size: 0.75em;
     color: #666;
     font-weight: normal;
+    margin-left: 30px;
 }
 
 .resource-header {
@@ -89,6 +90,7 @@ ul {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    margin-left: 30px;
 }
 
 .resource-header strong {
@@ -102,7 +104,7 @@ ul {
 
 .resource-dl-icon {
     position: absolute;
-    right: 10px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
 }

@@ -220,6 +220,7 @@ MARK: Main
     top: 0;
     position: sticky;
     padding: 10px;
+    background-color: white;
     z-index: 1000;
 }
 
@@ -227,6 +228,9 @@ MARK: Main
     margin: 0;
     margin-left: 10px;
     font-weight: 800;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /*

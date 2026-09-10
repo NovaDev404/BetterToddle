@@ -2,11 +2,11 @@ function getFileTypeLabel(mimeType) {
     if (!mimeType) return 'File';
     
     switch (true) {
-        case mimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation" || mime === "application/vnd.ms-powerpoint":
+        case mimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation" || mimeType === "application/vnd.ms-powerpoint":
             return "Presentation";
         case mimeType === "application/pdf":
             return "PDF";
-        case mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/msword":
+        case mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mimeType === "application/msword":
             return "Document";
         case mimeType === "text/html":
             return "HTML Document"
@@ -82,7 +82,41 @@ async function loadLessonContent(classroomId, title) {
                     const label = resource.label;
                     const mimeType = resource.attachment.mimeType;
                     const fileType = getFileTypeLabel(mimeType);
-                    resourcesHTML += `<div class="resource"><a href="#" onclick="openResourceViewer('${url}', '${label.replace(/'/g, "\\'")}', '${mimeType}'); return false;"><div class="resource-header"><strong>${label}</strong><img class="resource-dl-icon" src="/icons/24/solid/arrow-down-tray.svg" width="16" height="16"></div><span class="resource-type">${fileType}</span></a></div>`;
+                    function getIconURL(mimeType) {                        
+                        if (mimeType?.startsWith("video/")) {
+                            return '/icons/24/outline/video-camera.svg';
+                        }
+
+                        if (mimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation" || mimeType === "application/vnd.ms-powerpoint") {
+                            return '/icons/24/outline/presentation-chart-bar.svg';
+                        }
+
+                        if (mimeType === "application/pdf") {
+                            return '/icons/24/outline/document.svg';
+                        }
+
+                        if (mimeType === "text/html") {
+                            return '/icons/24/outline/code-bracket.svg';
+                        }
+
+                        if (mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mimeType === "application/msword") {
+                            return '/icons/24/outline/document.svg';
+                        }
+
+                        if (mimeType?.startsWith("audio/")) {
+                            return '/icons/24/outline/musical-note.svg';
+                        }
+
+                        if (mimeType?.startsWith("image/")) {
+                            return '/icons/24/outline/photo.svg';
+                        }
+                        if (mimeType?.startsWith("text/")) {
+                            return '/icons/24/outline/document-text.svg';
+                        }
+                        return '/icons/24/outline/document.svg';
+                    }
+                    const iconURL = getIconURL(mimeType)
+                    resourcesHTML += `<div class="resource"><a href="#" onclick="openResourceViewer('${url}', '${label.replace(/'/g, "\\'")}', '${mimeType}', '${iconURL}'); return false;"><div class="resource-header"><strong>${label}</strong><img class="resource-dl-icon" src="${iconURL}" width="20" height="20"></div><span class="resource-type">${fileType}</span></a></div>`;
                 });
                 resourcesDiv.innerHTML = resourcesHTML;
                 content.appendChild(resourcesDiv);

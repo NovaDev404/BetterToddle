@@ -32,6 +32,14 @@ function loadViewerContent(url, title, mimeType) {
     }
 }
 
+function download() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const url = urlParams.get('url');
+    if (url) {
+        window.open(url, '_blank');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const url = urlParams.get('url');

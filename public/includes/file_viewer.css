@@ -21,3 +21,17 @@
 .loading-gif {
     height: 75px;
 }
+
+.viewer-dl-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: whitesmoke;
+    border-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
+}
+.viewer-dl-icon:hover {
+    background-color: lightgray;
+}
