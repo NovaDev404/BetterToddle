@@ -69,12 +69,16 @@ function getLessonTypeLabel(info) {
                 return "PDF";
             case mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/msword":
                 return "Document";
+            case mime === "text/html":
+                return "HTML Document"
             case mime?.startsWith("audio/"):
                 return "Audio";
             case mime?.startsWith("video/"):
                 return "Video";
             case mime?.startsWith("image/"):
                 return "Image";
+            case mime?.startsWith("text/"):
+                return "Text"
             case attachmentType === "NOTE":
                 return "Note";
             case attachmentType === "LINK":
@@ -223,6 +227,10 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
                 return '<img class="lesson-item-icon" src="/icons/24/solid/document.svg" alt="PDF" width="16" height="16" />';
             }
 
+            if (mime === "text/html") {
+                return '<img class="lesson-item-icon" src="/icons/24/solid/code-bracket.svg" alt="HTML Document" width="16" height="16" />';
+            }
+
             if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/msword") {
                 return '<img class="lesson-item-icon" src="/icons/24/solid/document.svg" alt="Document" width="16" height="16" />';
             }
@@ -233,6 +241,9 @@ async function addLessonsToLessonsSubmenu(courseID, learningCourseID, subjectNam
 
             if (mime?.startsWith("image/")) {
                 return '<img class="lesson-item-icon" src="/icons/24/solid/photo.svg" alt="Image" width="16" height="16" />';
+            }
+            if (mime?.startsWith("text/")) {
+                return '<img class="lesson-item-icon" src="/icons/24/solid/document-text.svg" alt="Text" width="16" height="16" />';
             }
 
             return '<img class="lesson-item-icon" src="/icons/24/solid/document.svg" alt="File" width="16" height="16" />';

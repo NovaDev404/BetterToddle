@@ -2,18 +2,22 @@ function getFileTypeLabel(mimeType) {
     if (!mimeType) return 'File';
     
     switch (true) {
-        case mimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation" || mimeType === "application/vnd.ms-powerpoint":
+        case mimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation" || mime === "application/vnd.ms-powerpoint":
             return "Presentation";
         case mimeType === "application/pdf":
             return "PDF";
-        case mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mimeType === "application/msword":
+        case mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/msword":
             return "Document";
+        case mimeType === "text/html":
+            return "HTML Document"
         case mimeType?.startsWith("audio/"):
             return "Audio";
         case mimeType?.startsWith("video/"):
             return "Video";
         case mimeType?.startsWith("image/"):
             return "Image";
+        case mimeType?.startsWith("text/"):
+            return "Text"
         default:
             return "File";
     }

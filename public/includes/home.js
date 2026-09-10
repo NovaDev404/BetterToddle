@@ -3,5 +3,5 @@ async function updateStudentNameHome() {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
     const homeUserSpan = document.getElementById("home-user");
-    homeUserSpan.innerText = studentDetails.data.node.firstName;
+    homeUserSpan.innerText = studentDetails.data.node.preferredName || studentDetails.data.node.firstName || "student";
 }
